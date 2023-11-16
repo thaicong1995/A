@@ -20,7 +20,7 @@ namespace WebApi.Controllers
         private readonly IOrderService _iOrderService;
         private readonly Token _token;
 
-        public OrderController(IOrderService orderService, Token token, UserService userService)
+        public OrderController(IOrderService orderService, Token token)
         {
             _iOrderService = orderService;
             _token = token;

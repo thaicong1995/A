@@ -17,7 +17,7 @@ namespace WebApi.Sevice.Service
         {
             _myDb = myDb;
         }
-        string PathImgFoder = "C:\\Users\\thaic\\OneDrive\\Máy tính\\ImgP3";
+        string PathImgFoder = "C:\\Users\\PC\\Desktop\\ImgPJ3";
 
         //----Quản lý ảnh. khi store lưu ảnh về server - mỗi store = 1 forder + tên store(xử lý xong)
         public string AddNewProduct(int UserId, int ShopId, ProductDto productDto, IFormFile image)
