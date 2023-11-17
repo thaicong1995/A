@@ -19,7 +19,8 @@ namespace WebApi.MyDbContext
         public DbSet<Revenue> Revenues { get; set; }
         public DbSet<Discounts> Discounts { get; set; }
         public DbSet<DiscountUsage> DiscountUsages { get; set; }
-  
+        public DbSet<AddCardATM> AddCardATM { get; set; }
+
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder.Entity<User>()

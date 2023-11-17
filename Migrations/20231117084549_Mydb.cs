@@ -26,6 +26,23 @@ namespace WebApi.Migrations
                 });
 
             migrationBuilder.CreateTable(
+                name: "AddCardATM",
+                columns: table => new
+                {
+                    Id = table.Column<int>(type: "int", nullable: false)
+                        .Annotation("SqlServer:Identity", "1, 1"),
+                    userId = table.Column<int>(type: "int", nullable: false),
+                    BankName = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    Name = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    CardNumber = table.Column<string>(type: "nvarchar(max)", nullable: false),
+                    DateAdd = table.Column<DateTime>(type: "datetime2", nullable: false)
+                },
+                constraints: table =>
+                {
+                    table.PrimaryKey("PK_AddCardATM", x => x.Id);
+                });
+
+            migrationBuilder.CreateTable(
                 name: "CartItems",
                 columns: table => new
                 {
@@ -201,6 +218,9 @@ namespace WebApi.Migrations
         {
             migrationBuilder.DropTable(
                 name: "AccessTokens");
+
+            migrationBuilder.DropTable(
+                name: "AddCardATM");
 
             migrationBuilder.DropTable(
                 name: "CartItems");

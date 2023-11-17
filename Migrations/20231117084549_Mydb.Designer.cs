@@ -12,7 +12,7 @@ using WebApi.MyDbContext;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(MyDb))]
-    [Migration("20231111132248_Mydb")]
+    [Migration("20231117084549_Mydb")]
     partial class Mydb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -70,6 +70,37 @@ namespace WebApi.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("AccessTokens");
+                });
+
+            modelBuilder.Entity("WebApi.Models.AddCardATM", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<string>("BankName")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<string>("CardNumber")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime>("DateAdd")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("Name")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
+
+                    b.Property<int>("userId")
+                        .HasColumnType("int");
+
+                    b.HasKey("Id");
+
+                    b.ToTable("AddCardATM");
                 });
 
             modelBuilder.Entity("WebApi.Models.CartItem", b =>

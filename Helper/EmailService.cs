@@ -10,8 +10,8 @@ public class EmailService
 
     public EmailService()
     {
-        this.apiKey = "c8323765ec153d79af7982b315d894c8-3e508ae1-50c0f35b";
-        this.domain = "sandboxc322f954c67c413999c005adc6a0ba5c.mailgun.org";
+        this.apiKey = "9f32b64d3468220276b2386f9ef6b2a1-1c7e8847-817e449e";
+        this.domain = "sandboxa58c4a4fc7ab4c1f92bcb203d73f88e0.mailgun.org";
     }
     public bool SendActivationEmail(string toEmail, string activationLink)
     {

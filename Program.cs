@@ -27,14 +27,15 @@ builder.Services.AddScoped<IOrderService,OrderService>();
 builder.Services.AddScoped<IWalletService,WalletService>();
 builder.Services.AddScoped<IReveneuService,RevenueService>();
 builder.Services.AddScoped<IDiscountService,DiscountService>();
-builder.Services.AddScoped<IShopService,ShopService>();
+builder.Services.AddScoped<IShopService, ShopService>();
+builder.Services.AddScoped<IAddCardATMSevice, AddCardATMSevice>();
 builder.Services.AddScoped<Token>();
 builder.Services.AddSingleton<BackGroundService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddScoped<ResetService>();
 builder.Services.AddTransient<ResetService>();
-builder.Services.AddScoped<VnPayLibrary>();
-builder.Services.AddScoped<VnPayService>();
+builder.Services.AddScoped<VnPayLibraryToken>();
+builder.Services.AddScoped<VnPayServiceToken>();
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<RazorViewEngineOptions>(options =>
