@@ -2,6 +2,7 @@
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 
 namespace WebApi.Sevice.Service
@@ -9,10 +10,11 @@ namespace WebApi.Sevice.Service
     public class CartItemService : ICartItemService
     {
         private readonly MyDb _myDb;
-
-        public CartItemService(MyDb myDb)
+        private readonly IRepository _iRepository;
+        public CartItemService(MyDb myDb, IRepository repository)
         {
             _myDb = myDb;
+            _iRepository = repository;
         }
 
         //Công việc cần làm: Kiểm tra số lượng trước khi lưu vào giỏ hàng (hoàn thành)
@@ -28,7 +30,7 @@ namespace WebApi.Sevice.Service
                     int quantity = cartItemRequest.quantities[i];
 
                     // Kiem tra san pham trong gio hang
-                    CartItem productInCart = _myDb.CartItems.FirstOrDefault(c => c.ProductId == productId && c.UserId == userID && !c.isSelect);
+                    CartItem productInCart = _iRepository.GetCartItemByUser(productId, userID);
 
                     if (productInCart != null)
                     {
@@ -39,7 +41,7 @@ namespace WebApi.Sevice.Service
                     else
                     {
                         // San pham chua co- them moi
-                        Product product = _myDb.Products.FirstOrDefault(p => p.Id == productId);
+                        Product product = _iRepository.GetProductByID(productId);
                         if (product != null)
                         {
                             if (quantity <= 0)
@@ -86,10 +88,11 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _myDb.CartItems.FirstOrDefault(c => c.ProductId == productId && c.UserId == userId && !c.isSelect);
+                CartItem cartItem =_iRepository.GetCartItemByUser(productId, userId);
 
                 if (cartItem != null)
                 {
+                
                     cartItem.Quantity ++;
                     cartItem.PriceQuantity = cartItem.Price * cartItem.Quantity;
 
@@ -109,7 +112,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _myDb.CartItems.FirstOrDefault(c => c.ProductId == productId && c.UserId == userId && !c.isSelect);
+                CartItem cartItem = _iRepository.GetCartItemByUser(productId, userId);
 
                 if (cartItem != null)
                 {
@@ -136,23 +139,12 @@ namespace WebApi.Sevice.Service
             }
         }
 
-        public List<CartItem> GetCartByUerId(int userId)
-        {
-            try
-            {
-                List<CartItem> cartItems = _myDb.CartItems.Where(c => c.UserId == userId && !c.isSelect).ToList();
-                return cartItems;
-            }
-            catch (Exception ex)
-            {
-                throw new Exception($"An error occurred: {ex.Message}");
-            }
-        }
+    
         public bool DeleteCart(int productId, int userId)
         {
             try
             {
-                CartItem cartItem = _myDb.CartItems.FirstOrDefault(c => c.ProductId == productId && c.UserId == userId && !c.isSelect);
+                CartItem cartItem = _iRepository.GetCartItemByUser(productId, userId);
                 if (cartItem != null)
                 {
                     _myDb.CartItems.Remove(cartItem);
@@ -171,17 +163,20 @@ namespace WebApi.Sevice.Service
             }
         }
 
-        public List<CartItem> GetListCart (int userId)
+
+        public List<CartItem> GetCartByUerId(int userId)
         {
             try
             {
                 List<CartItem> cartItems = _myDb.CartItems.Where(c => c.UserId == userId && !c.isSelect).ToList();
                 return cartItems;
-
-            }catch (Exception ex)
+            }
+            catch (Exception ex)
             {
-                throw new Exception();
+                throw new Exception($"An error occurred: {ex.Message}");
             }
         }
+
+      
     }
 }

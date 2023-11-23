@@ -12,7 +12,7 @@ using WebApi.MyDbContext;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(MyDb))]
-    [Migration("20231117084549_Mydb")]
+    [Migration("20231123220837_Mydb")]
     partial class Mydb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -165,8 +165,9 @@ namespace WebApi.Migrations
                     b.Property<decimal>("Value")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("_discountStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("_discountStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -231,11 +232,13 @@ namespace WebApi.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("_orderStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("_orderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("payMethod")
-                        .HasColumnType("int");
+                    b.Property<string>("payMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

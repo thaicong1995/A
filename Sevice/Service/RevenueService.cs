@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 
 namespace WebApi.Sevice.Service
@@ -10,11 +11,12 @@ namespace WebApi.Sevice.Service
     public class RevenueService : IReveneuService
     {
         private readonly MyDb _myDb;
-      
+        private readonly IRepository _iRepository;
 
-        public RevenueService(MyDb myDb)
+        public RevenueService(MyDb myDb, IRepository repository)
         {
             _myDb = myDb;
+            _iRepository = repository;
         }
 
         public Revenue CreateReveneuForShop(Shop shop)
@@ -51,7 +53,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Lấy thông tin của cửa hàng
-                var shop = _myDb.Shops.FirstOrDefault(s => s.Id == shopId);
+                var shop = _iRepository.GetShopByID(shopId);
 
                 if (shop == null)
                 {
@@ -69,7 +71,7 @@ namespace WebApi.Sevice.Service
                 }
 
                 // Lấy thông tin doanh thu của cửa hàng
-                var revenue = _myDb.Revenues.FirstOrDefault(r => r.ShopId == shopId);
+                var revenue = _iRepository.ReveneuByShop(shopId);
 
                 if (revenue == null)
                 {

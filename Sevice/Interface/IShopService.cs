@@ -9,6 +9,6 @@ namespace WebApi.Sevice.Interface
         Shop CreateShopForUser(User user);
         string UpdateShop(int userId, ShopDto shopDto);
         bool ActivateShop(int userId, ShopDto shopDto);
-        Shop GetShopByID(int ShopId);
+       
     }
 }

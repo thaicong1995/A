@@ -22,6 +22,12 @@ namespace WebApi.Models
         public int ShopId { get; set;}
        public ProductStatus _productStatus { get; set; }
 
-
+        public string ProductStatusString
+        {
+            get
+            {
+                return _productStatus.ToString();
+            }
+        }
     }
 }

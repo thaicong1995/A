@@ -167,19 +167,19 @@ namespace WebApi.Controllers
         {
             try
             {
-                
-                    var products = _iProductService.GetAllByShopID(ShopID);
 
-                    if (products != null && products.Any())
-                    {
-                        return Ok(products);
-                    }
-                    else
-                    {
-                        return NotFound("No products found for this shop.");
-                    }
+                var products = _iProductService.GetAllByShopID(ShopID);
 
-                
+                if (products != null && products.Any())
+                {
+                    return Ok(products);
+                }
+                else
+                {
+                    return NotFound("No products found for this shop.");
+                }
+
+
             }
             catch (Exception ex)
             {
@@ -187,12 +187,13 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("all")]
-        public IActionResult GetAll()
+
+        [HttpGet("all/page={page}")]
+        public IActionResult GetAll(int page = 1)
         {
             try
             {
-                var products = _iProductService.GetAll();
+                var products = _iProductService.GetAll(page);
                 return Ok(products);
             }
             catch (Exception e)

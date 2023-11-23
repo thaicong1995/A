@@ -34,30 +34,21 @@ public class DecodeController : ControllerBase
 
         // Lấy thông tin người dùng từ các claim
         var userIdClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-        var emailClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Email);
-        var nameClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
-        var phoneClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.MobilePhone);
-        var addressClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.StreetAddress);
+        
 
-        if (userIdClaim == null || emailClaim == null || nameClaim == null || phoneClaim == null || addressClaim == null)
+        if (userIdClaim == null)
         {
             return BadRequest("User information is incomplete in the token.");
         }
 
         int userId = int.Parse(userIdClaim.Value);
-        string email = emailClaim.Value;
-        string name = nameClaim.Value;
-        string phone = phoneClaim.Value;
-        string address = addressClaim.Value;
+        
 
         // Tạo đối tượng người dùng từ thông tin trong token
         User user = new User
         {
             Id = userId,
-            Email = email,
-            Name = name,
-            Phone = phone,
-            Address = address
+           
         };
 
         return Ok(user);

@@ -7,6 +7,8 @@ using Microsoft.OpenApi.Models;
 using System.Text;
 using WebApi.Controllers.View;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
+using WebApi.Reposetory.Reposetory;
 using WebApi.Sevice.Interface;
 using WebApi.Sevice.Service;
 using WebApi.TokenConfig;
@@ -29,11 +31,14 @@ builder.Services.AddScoped<IReveneuService,RevenueService>();
 builder.Services.AddScoped<IDiscountService,DiscountService>();
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAddCardATMSevice, AddCardATMSevice>();
+builder.Services.AddScoped<IRepository, Repository>();
 builder.Services.AddScoped<Token>();
 builder.Services.AddSingleton<BackGroundService>();
 builder.Services.AddTransient<EmailService>();
 builder.Services.AddScoped<ResetService>();
 builder.Services.AddTransient<ResetService>();
+builder.Services.AddScoped<VnPayLibrary>();
+builder.Services.AddScoped<VnPayService>();
 builder.Services.AddScoped<VnPayLibraryToken>();
 builder.Services.AddScoped<VnPayServiceToken>();
 builder.Services.AddControllers();
@@ -90,8 +95,8 @@ builder.Services.AddAuthentication(options =>
         ValidIssuer = builder.Configuration["Jwt:Issuer"],   // Lấy giá trị Issuer từ cấu hình
         ValidAudience = builder.Configuration["Jwt:Audience"],
         ValidateIssuerSigningKey = true,
-        // Replace "Jwt:Token512" with the correct configuration key for your token
-        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token512"]))
+        // Replace "Jwt:Token256" with the correct configuration key for your token
+        IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(builder.Configuration["Jwt:Token256"]))
     };
 })
 .AddCookie(CookieAuthenticationDefaults.AuthenticationScheme, options =>
@@ -138,6 +143,7 @@ if (app.Environment.IsDevelopment())
     });
 }
 app.UseRouting();
+
 app.UseCors("AllowSpecificOrigin");
 app.UseAuthentication();
 app.UseAuthorization(); // Đảm bảo đặt UseAuthorization ở đây

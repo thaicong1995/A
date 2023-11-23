@@ -18,43 +18,31 @@ namespace WebApi.VNpay
     [ApiController]
     public class VnPayControllerToken : ControllerBase
     {
-        private readonly VnPayServiceToken _vnPayService;
+        private readonly VnPayServiceToken _vnPayServicetoken;
         private readonly MyDb _myDb;
         private readonly Token _token;
+        public VnPayControllerToken(VnPayServiceToken vnPayService, MyDb myDb, Token token)
+        {
+            _vnPayServicetoken = vnPayService;
+            _myDb = myDb;
+            _token = token;
+        }
 
-        [HttpGet("token")]
-        public IActionResult CreatePaymentToken([FromQuery] CreateTokenRequest request)
+
+        [HttpGet("generateToken")]
+        public IActionResult GenerateToken(int userId)
         {
             try
             {
-                if (HttpContext.User != null)
-                {
-                    var userClaims = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
-
-                    if (userClaims != null && int.TryParse(userClaims.Value, out int userID))
-                    {
-                        var tokenStatus = _token.CheckTokenStatus(userID);
-
-                        if (tokenStatus == StatusToken.Expired)
-                        {
-                            return Unauthorized("The token is no longer valid");
-                        }
-
-                        // Assuming orderNo and orderDto are available in your controller
-                        var paymentUrl = _vnPayService.CreateTokenUrl(userID, request);
-
-                        return Ok(new { paymentUrl });
-                    }
-                }
-
-                // Handle the case when HttpContext.User is null or userClaims parsing fails
-                return Unauthorized("Invalid user ID claims");
+                string tokenizationUrl = _vnPayServicetoken.GenerateTokenizationUrl(userId, HttpContext);
+                return Ok(new { TokenizationUrl = tokenizationUrl });
             }
             catch (Exception ex)
             {
-                return UnprocessableEntity(new { error = "Unable to create payment token", message = ex.Message });
+                return BadRequest(new { Error = ex.Message });
             }
         }
+
 
 
 

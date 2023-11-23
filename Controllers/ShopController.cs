@@ -107,28 +107,6 @@ namespace WebApi.Controllers
             }
         }
 
-       
-        [HttpGet("Get-Id")]
-        public IActionResult GetShopById([FromQuery]  int Id)
-        {
-            try
-            {
-               var Result = _iShopService.GetShopByID(Id);
-                if (Result != null)
-                {
-                    return Ok(Result);
-                }
-                else
-                {
-                    return NotFound("Not Found");
-                }
-            }
-            catch (Exception ex)
-            {
-                return BadRequest(new { message = $"Error: {ex.Message}" });
-            }
-        }
-
     }  
 
 }

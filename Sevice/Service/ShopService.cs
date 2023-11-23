@@ -3,6 +3,7 @@ using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 
 namespace WebApi.Sevice.Service
@@ -11,10 +12,12 @@ namespace WebApi.Sevice.Service
     {
         private readonly MyDb _myDb;
         private readonly IReveneuService _iRevenueService;
-        public ShopService(MyDb myDb, IReveneuService revenueService)
+        private readonly IRepository _iRepository;
+        public ShopService(MyDb myDb, IReveneuService revenueService, IRepository repository )
         {
             _myDb = myDb;
             _iRevenueService = revenueService;
+            _iRepository = repository;
         }
 
         public List<Shop> GetShops()
@@ -62,7 +65,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop =_myDb.Shops.FirstOrDefault(s => s.UserId == userId);
+                Shop shop = _iRepository.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -114,7 +117,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _myDb.Shops.SingleOrDefault(s => s.UserId == userId);
+                Shop shop = _iRepository.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -159,9 +162,6 @@ namespace WebApi.Sevice.Service
 
         }
 
-        public Shop GetShopByID(int ShopId)
-        {
-            return _myDb.Shops.FirstOrDefault(s => s.Id == ShopId);
-        }
+       
     }
 }

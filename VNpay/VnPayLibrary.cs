@@ -46,19 +46,6 @@ public class VnPayLibrary
         }
     }
 
-    public void AddResponseData(string key, string value)
-    {
-        if (!string.IsNullOrEmpty(value))
-        {
-            _responseData.Add(key, value);
-        }
-    }
-
-    public string GetResponseData(string key)
-    {
-        return _responseData.TryGetValue(key, out var retValue) ? retValue : string.Empty;
-    }
-
     public string CreateRequestUrl(string baseUrl, string vnpHashSecret)
     {
         var data = new StringBuilder();
@@ -83,13 +70,6 @@ public class VnPayLibrary
         return baseUrl;
     }
 
-    public bool ValidateSignature(string inputHash, string secretKey)
-    {
-        var rspRaw = GetResponseData();
-        var myChecksum = HmacSha512(secretKey, rspRaw);
-        return myChecksum.Equals(inputHash, StringComparison.InvariantCultureIgnoreCase);
-    }
-
     private string HmacSha512(string key, string inputData)
     {
         var hash = new StringBuilder();
@@ -107,32 +87,7 @@ public class VnPayLibrary
         return hash.ToString();
     }
 
-    private string GetResponseData()
-    {
-        var data = new StringBuilder();
-        if (_responseData.ContainsKey("vnp_SecureHashType"))
-        {
-            _responseData.Remove("vnp_SecureHashType");
-        }
-
-        if (_responseData.ContainsKey("vnp_SecureHash"))
-        {
-            _responseData.Remove("vnp_SecureHash");
-        }
-
-        foreach (var (key, value) in _responseData.Where(kv => !string.IsNullOrEmpty(kv.Value)))
-        {
-            data.Append(WebUtility.UrlEncode(key) + "=" + WebUtility.UrlEncode(value) + "&");
-        }
-
-        //remove last '&'
-        if (data.Length > 0)
-        {
-            data.Remove(data.Length - 1, 1);
-        }
-
-        return data.ToString();
-    }
+  
 }
 
 public class VnPayCompare : IComparer<string>

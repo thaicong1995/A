@@ -7,8 +7,7 @@ namespace WebApi.Sevice.Interface
         List<CartItem> AddToCart(CartItemRequest cartItemRequest, int userID);
         CartItem IncreaseQuantity(int productId, int userId);
         CartItem DecreaseQuantity(int productId, int userId);
-        List<CartItem> GetCartByUerId(int userId);
         bool DeleteCart(int productId, int userId);
-        List<CartItem> GetListCart(int userId);
+        List<CartItem> GetCartByUerId(int userId);
     }
 }

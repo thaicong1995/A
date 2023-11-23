@@ -4,6 +4,7 @@ using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 using WebApi.Sevice.Service;
 
@@ -16,13 +17,16 @@ namespace WebApi.VNpay
         private readonly VnPayLibrary _vnPayLibrary;
         private readonly IDiscountService _iDiscountService;
         private readonly IOrderService _iOrderservice;
-        public VnPayService(IConfiguration configuration, MyDb myDb, VnPayLibrary vnPayLibrary, IDiscountService discountService, IOrderService orderservice)
+        private readonly IRepository _iRepository;
+        public VnPayService(IConfiguration configuration, MyDb myDb, VnPayLibrary vnPayLibrary,
+                                IDiscountService discountService, IOrderService orderservice, IRepository repository)
         {
             _configuration = configuration;
             _myDb = myDb;
             _vnPayLibrary = vnPayLibrary;
             _iDiscountService = discountService;
             _iOrderservice = orderservice;
+            _iRepository = repository;
         }
 
         // Dữ kiệu chưa chưa trả thành công thì Discoint đã lưu ( fix xong)
@@ -33,7 +37,7 @@ namespace WebApi.VNpay
             var tick = DateTime.Now.Ticks.ToString();
             
             var pay = new VnPayLibrary();
-            List<Order> orders = _myDb.Orders.Where(o => o.UserId == userId && o.OrderNo == orderNo && o._orderStatus == OrderStatus.WaitPay).ToList();
+            List<Order> orders = _iRepository.GetOrdersByOrderNo(orderNo, userId);
 
             decimal totalOrderPrice = 0.0m;
 
@@ -117,7 +121,7 @@ namespace WebApi.VNpay
                     foreach (var order in orders)
 
                     {
-                        var product = _myDb.Products.FirstOrDefault(p => p.Id == order.ProductId);
+                        var product = _iRepository.GetProductByID(order.ProductId);
 
                         if (product != null)
                         {
@@ -143,28 +147,14 @@ namespace WebApi.VNpay
                         }
 
                         //------
-                        var selectedCartItems = _myDb.CartItems
-                        .Where(cartItem => cartItem.UserId == order.UserId)
-                        .ToList();
-
-                        foreach (var cartItem in selectedCartItems)
-                        {
-                            var order1 = orders.FirstOrDefault(o => o.ProductId == order.ProductId);
-                            if (order != null)
-                            {
-                                cartItem.isSelect = true;
-                            }
-                        }
-
-                        if (order.DiscountId != 0)
+                        _iRepository.GetSelectedCartItemsByUserId(order.UserId);
+                        if (order.DiscountId != 0 && order.DiscountId != null)
                         {
                             _iDiscountService.SaveDiscountByUserId(order.UserId,(int) order.DiscountId);
                         }
                         _myDb.SaveChanges();
 
                     }
-
-                   
                 }
                 else
                 {
