@@ -5,7 +5,6 @@ namespace WebApi.Sevice.Interface
 {
     public interface IUserService
     {
-        List<User> GetUsers();
         User RegisterUser(User user);
         bool SendPasswordResetEmail(string email);
         bool ActivateUser(string activationToken);

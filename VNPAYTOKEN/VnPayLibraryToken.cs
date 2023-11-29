@@ -10,6 +10,7 @@ public class VnPayLibraryToken
     private readonly SortedList<string, string> _requestData = new SortedList<string, string>(new VnPayCompare());
     private readonly SortedList<string, string> _responseData = new SortedList<string, string>(new VnPayCompare());
 
+   
 
     public string GenerateToken(string secretKey)
     {
@@ -53,7 +54,7 @@ public class VnPayLibraryToken
             return ex.Message;
         }
 
-        return "127.0.0.1";
+        return "not";
     }
     public void AddRequestData(string key, string value)
     {
@@ -61,6 +62,10 @@ public class VnPayLibraryToken
         {
             _requestData.Add(key, value);
         }
+    }
+    public SortedList<string, string> GetRequestData()
+    {
+        return _requestData;
     }
 
     public void AddResponseData(string key, string value)

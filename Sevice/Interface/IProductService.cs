@@ -11,7 +11,7 @@ namespace WebApi.Sevice.Interface
         bool UpdateCart(int productId, string productName, decimal price);
         List<Product> GetAllByShopID(int ShopId);
         List<Object> SearchProducts(string keyword);
-        List<Product> GetAll();
+        List<Product> GetAll(int page = 1);
     }
 
 }

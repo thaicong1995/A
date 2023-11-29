@@ -6,25 +6,27 @@ using System;
 using System.IO;
 using Microsoft.AspNetCore.Http;
 using WebApi.Sevice.Interface;
+using WebApi.Reposetory.Interface;
 
 namespace WebApi.Sevice.Service
 {
     public class ProductService : IProductService
     {
         private readonly MyDb _myDb;
-
-        public ProductService(MyDb myDb)
+        private readonly IRepository _iRepository;
+        public ProductService(MyDb myDb, IRepository repository)
         {
             _myDb = myDb;
+            _iRepository = repository;
         }
-        string PathImgFoder = "C:\\Users\\PC\\Desktop\\ImgPJ3";
+        string PathImgFoder = "C:\\Users\\thaic\\OneDrive\\Máy tính\\ImgP3";
 
         //----Quản lý ảnh. khi store lưu ảnh về server - mỗi store = 1 forder + tên store(xử lý xong)
         public string AddNewProduct(int UserId, int ShopId, ProductDto productDto, IFormFile image)
         {
             try
             {
-                Shop shop = _myDb.Shops.FirstOrDefault(s => s.Id == ShopId);
+                Shop shop = _iRepository.GetShopByID(ShopId);
                 if (shop == null)
                 {
                     throw new Exception("Not Found!");
@@ -128,7 +130,7 @@ namespace WebApi.Sevice.Service
 
         public Product GetProductByID(int productId)
         {
-            return _myDb.Products.FirstOrDefault(s => s.Id == productId);
+            return _iRepository.GetProductByID(productId);
         }
 
         public string UpdateProduct(int userId, int shopId, int productId, ProductDto productDto, IFormFile image)
@@ -136,7 +138,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Kiểm tra xem người dùng có quyền chỉnh sửa sản phẩm hay không
-                var shop = _myDb.Shops.FirstOrDefault(s => s.Id == shopId);
+                var shop = _iRepository.GetShopByID(shopId);
                 if (shop == null)
                 {
                     return "Shop not found!";
@@ -153,7 +155,7 @@ namespace WebApi.Sevice.Service
                 }
 
                 // Tìm sản phẩm cần chỉnh sửa
-                var product = _myDb.Products.FirstOrDefault(p => p.Id == productId);
+                var product = _iRepository.GetProductByID(productId);
 
                 if (product == null)
                 {
@@ -251,7 +253,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _myDb.CartItems.FirstOrDefault(c => c.ProductId == productId  && !c.isSelect);
+                CartItem cartItem = _iRepository.GetCart(productId);
 
                 if (cartItem != null)
                 {
@@ -279,22 +281,19 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _myDb.Shops.FirstOrDefault(s => s.Id == ShopId);
-                if (shop == null)
+                // Kiểm tra sự tồn tại của cửa hàng với shopId
+                if (!_iRepository.IsShopActive(ShopId))
                 {
-                    throw new Exception("Not Found!");
-                }    
-                if (shop._shopStatus != ShopStatus.Active)
-                {
-                    throw new Exception("Shop is not active.");
+                    throw new Exception ("Shop not found!");
                 }
-                List<Product> products = _myDb.Products.Where(p => p.ShopId == ShopId).ToList();
+
+                List<Product> products = _iRepository.GetProductsByShop(ShopId);
 
                 return products;
             }
-            catch(Exception e)
+            catch (Exception e)
             {
-                return new List<Product>();
+                throw new Exception($"An error occurred: {e.Message}");
             }
         }
 
@@ -309,9 +308,9 @@ namespace WebApi.Sevice.Service
             IQueryable<Product> products = _myDb.Products;
 
             // so sánh keyword với shopName
-            Shop matchingShops = _myDb.Shops.FirstOrDefault(shop => shop.ShopName.ToLower() == keyword);
+            Shop matchingShops = _iRepository.FindShopByKeyword(keyword);
 
-            List<Product> product = _myDb.Products.Where(product => product.ProductName.ToLower().Contains(keyword)).ToList();
+            List<Product> product = _iRepository.FindProductsByKeyword(keyword);
 
             if (matchingShops != null || product.Any())
             {
@@ -336,11 +335,15 @@ namespace WebApi.Sevice.Service
             
         }
 
-        public List<Product> GetAll()
+        public List<Product> GetAll(int page = 1)
         {
             try
             {
-                List<Product> products = _myDb.Products.ToList();
+                int pageSize = 10; // Giá trị mặc định cho pageSize
+                int skip = (page - 1) * pageSize;
+
+                List<Product> products = _myDb.Products.Skip(skip).Take(pageSize).ToList();
+
                 return products;
             }
             catch (Exception e)
@@ -349,6 +352,7 @@ namespace WebApi.Sevice.Service
             }
         }
 
-        
+
+
     }
 }

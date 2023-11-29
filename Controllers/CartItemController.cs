@@ -203,7 +203,7 @@ namespace WebApi.Controllers
                         // Token không còn hợp lệ, từ chối yêu cầu
                         return Unauthorized("The token is no longer valid. Please log in again.");
                     }
-                    var ListCart = _iCartItemService.GetListCart(userID);
+                    var ListCart = _iCartItemService.GetCartByUerId(userID);
                     return Ok( ListCart);
                 }
                 else

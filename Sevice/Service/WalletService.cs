@@ -30,7 +30,7 @@ namespace WebApi.Sevice.Service
                 // Tạo một cửa hàng mới
                 Wallet newWallet = new Wallet
                 {
-                    UserId = user.Id, // Đặt UserId bằng ID của người dùng 
+                    UserId = user.Id,
                 };
 
                 _myDb.Wallets.Add(newWallet);

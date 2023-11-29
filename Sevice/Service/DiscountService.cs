@@ -32,7 +32,7 @@ namespace WebApi.Sevice.Service
                     Value = discount.Value,
                     StartDate = currentDate,
                     EndDate = currentDate.AddDays(1), // Hiệu lực trong 1 ngày
-                    _discountStatus = DiscountStatus.Active // Đảm bảo bạn đã gán DiscountStatus từ đối tượng DTO
+                    _discountStatus = DiscountStatus.Active 
                 };
 
                 // Thêm đối tượng mã giảm giá vào cơ sở dữ liệu
@@ -55,7 +55,11 @@ namespace WebApi.Sevice.Service
             {
                 throw new InvalidOperationException("Discount not found!");
             }
-
+            var date = DateTime.Now;
+            if (date <  discount.EndDate && date > discount.EndDate)
+            {
+                return 0;
+            }
             if (discount._discountStatus != DiscountStatus.Active)
             {
                 return 0;

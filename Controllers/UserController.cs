@@ -31,21 +31,6 @@ namespace WebApi.Controllers
             _emailService = emailService;
         }
 
-        [Authorize]
-        [HttpGet]
-        [Route("users")]
-        public ActionResult<List<User>> GetUsers()
-        {
-            try
-            {
-                List<User> users = _iUserService.GetUsers();
-                return Ok(users);
-            }
-            catch (Exception e)
-            {
-                return StatusCode(500, $"An error occurred: {e.Message}");
-            }
-        }
 
         [HttpPost]
         [Route("register")]

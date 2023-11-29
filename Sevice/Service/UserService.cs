@@ -6,6 +6,7 @@ using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 using WebApi.TokenConfig;
 
@@ -19,35 +20,22 @@ namespace WebApi.Sevice.Service
         private readonly IShopService _iShopService;
         private readonly IWalletService _iWalletService;
         private readonly EmailService _emailService;
+        private readonly IRepository _iRepository;
 
-        public UserService(MyDb myDb, Token token, IShopService shopService, IWalletService walletService, EmailService emailService)
+        public UserService(MyDb myDb, Token token, IShopService shopService, IWalletService walletService, EmailService emailService, IRepository repository)
         {
             _myDb = myDb;
             _token = token;
             _iShopService = shopService;
             _iWalletService = walletService;
             _emailService = emailService;
+            _iRepository = repository;
         }
 
-      
-
-        public List<User> GetUsers()
-        {
-            try
-            {
-                List<User> users = _myDb.Users.ToList();
-
-                return users;
-            }
-            catch (Exception e)
-            {
-                throw new Exception($"An error occurred: {e.Message}");
-            }
-        }
 
         public User GetUserByID(int UserId)
         {
-            return _myDb.Users.FirstOrDefault(s => s.Id == UserId);
+            return _iRepository.GetUserById(UserId);
         }
 
         //Chưa test trường hợp gửi mail thất bại (Nếu đăng ký thành công gửi mail fail hoặc hết hạn -- đã xong.)
@@ -88,9 +76,11 @@ namespace WebApi.Sevice.Service
             }
         }
 
+
+        // Active bằng Email
         public bool ActivateUser(string activationToken)
         {
-            var user = _myDb.Users.FirstOrDefault(u => u.ActivationToken == activationToken);
+            var user = _iRepository.GetUserByActivationToken(activationToken);
 
             if (user != null)
             {
@@ -105,7 +95,7 @@ namespace WebApi.Sevice.Service
 
         public bool SendPasswordResetEmail(string email)
         {
-            var user = _myDb.Users.FirstOrDefault(u => u.Email == email);
+            var user = _iRepository.GetUserByEmail(email);
 
             if (user != null)
             {
@@ -128,77 +118,20 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                // Tìm người dùng trong cơ sở dữ liệu bằng Email
-                User user = _myDb.Users.SingleOrDefault(u => u.Email == userDto.Email);
+                // Lấy user = email
+                User user = _iRepository.GetUserByEmail(userDto.Email);
 
                 if (user == null)
-                {
                     throw new Exception("User not found!");
-                }
 
                 if (!BCrypt.Net.BCrypt.Verify(userDto.Password, user.Password))
-                {
                     throw new Exception("Wrong password!");
-                }
 
-                if (user._userStatus == UserStatus.Inactive)
-                {
-                    string newActivationToken = Guid.NewGuid().ToString();
-                    user.ActivationToken = newActivationToken;
-                    _myDb.SaveChanges();
+                ActivateUser(user);
 
-                    // Gửi email kích hoạt mới
-                    string activationLink = "https://localhost:7212/api/activate?activationToken=" + newActivationToken;
-                    _emailService.SendActivationEmail(user.Email, activationLink);
-                    throw new Exception("Account has not been activated. Please check your email to activate your account.");
-                }
+                UpdateOrCreateAccessToken(user);
 
-               
-                    var existingToken = _myDb.AccessTokens.FirstOrDefault(t => t.UserID == user.Id && t.statusToken == StatusToken.Valid);
-
-                    if (existingToken != null)
-                    {
-                        // Nếu có token hiện tại, sẽ ghi đè lên token hiện tại
-                        var token = _token.CreateToken(user);
-
-                        if (string.IsNullOrEmpty(token))
-                        {
-                            throw new Exception("Failed to create a token.");
-                        }
-
-                        existingToken.AccessToken = token; // Ghi đè token hiện tại
-                        
-                        // Cập nhật thời gian hết hạn cho token hiện tại (nếu cần)
-                        existingToken.ExpirationDate = DateTime.Now.AddMinutes(30); 
-
-                    }
-                    else
-                    {
-                    // Nếu chưa có token, bạn sẽ tạo token mới và lưu vào cơ sở dữ liệu
-                    // (Trong trường hợp không ghi đè thì set statusToken trước đó = 1) để thu hồi mã token trước
-                    var token = _token.CreateToken(user);
-
-                        if (string.IsNullOrEmpty(token))
-                        {
-                            throw new Exception("Failed to create a token.");
-                        }
-
-                        var accessToken = new AcessToken
-                        {
-                            UserID = user.Id,
-                            AccessToken = token,
-                            statusToken = StatusToken.Valid,
-                            ExpirationDate = DateTime.Now.AddMinutes(30) // Ví dụ: đặt thời gian hết hạn là 3 phút sau
-                        };
-
-
-                        _myDb.AccessTokens.Add(accessToken);
-                    }
-                
-                    // Lưu thay đổi vào cơ sở dữ liệu
-                  _myDb.SaveChanges();
-                  return user;
-                
+                return user;
             }
             catch (Exception e)
             {
@@ -206,32 +139,77 @@ namespace WebApi.Sevice.Service
             }
         }
 
-        public void TokensAsExpired(int userId)
+        private void ActivateUser(User user)
         {
-            var userTokens = _myDb.AccessTokens.Where(t => t.UserID == userId && t.statusToken == StatusToken.Valid).ToList();
-            foreach (var token in userTokens)
+            if (user._userStatus == UserStatus.Inactive)
             {
-                token.statusToken = StatusToken.Expired;
+                string newActivationToken = Guid.NewGuid().ToString();
+                user.ActivationToken = newActivationToken;
+                _myDb.SaveChanges();
+
+                string activationLink = "https://localhost:7212/api/activate?activationToken=" + newActivationToken;
+                _emailService.SendActivationEmail(user.Email, activationLink);
+
+                throw new Exception("Account has not been activated. Please check your email to activate your account.");
             }
+        }
+
+
+        // tạo mới hoặc ghi đè token
+        private void UpdateOrCreateAccessToken(User user)
+        {
+            var existingToken = _iRepository.GetValidTokenByUserId(user.Id);
+
+            if (existingToken != null)
+            {
+                var token = _token.CreateToken(user);
+
+                if (string.IsNullOrEmpty(token))
+                    throw new Exception("Failed to create a token.");
+
+                existingToken.AccessToken = token;
+                existingToken.ExpirationDate = DateTime.Now.AddMinutes(30);
+            }
+            else
+            {
+
+                // không có tạo mới token
+                var token = _token.CreateToken(user);
+
+                if (string.IsNullOrEmpty(token))
+                    throw new Exception("Failed to create a token.");
+
+                var accessToken = new AcessToken
+                {
+                    UserID = user.Id,
+                    AccessToken = token,
+                    statusToken = StatusToken.Valid,
+                    ExpirationDate = DateTime.Now.AddMinutes(30)
+                };
+
+                _myDb.AccessTokens.Add(accessToken);
+            }
+
             _myDb.SaveChanges();
         }
+
 
         public bool LogoutUser(int userId)
         {
             try
             {
                 // Lấy danh sách các token của người dùng
-                var userTokens = _myDb.AccessTokens.Where(t => t.UserID == userId && t.statusToken == StatusToken.Valid).ToList();
+                var userToken = _iRepository.GetValidTokenByUserId(userId);
 
-                foreach (var token in userTokens)
+                if (userToken != null)
                 {
-                    var tokenValue = token.AccessToken; // Lấy giá trị của token từ cơ sở dữ liệu
+                    var tokenValue = userToken.AccessToken;
                     var principal = _token.ValidateToken(tokenValue); // Xác thực token
 
                     if (principal != null)
                     {
                         // Token hợp lệ, bạn có thể đánh dấu token đã hết hạn
-                        token.statusToken = StatusToken.Expired;
+                        userToken.statusToken = StatusToken.Expired;
                     }
                 }
 

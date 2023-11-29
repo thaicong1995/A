@@ -32,7 +32,7 @@ namespace WebApi.Controllers
         public IActionResult ActivateShop([FromBody] ShopDto shopDto)
         {
             try
-            {             
+            {
                 // Lấy userID của người dùng từ Claims trong token
                 var userClaims = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
                 if (userClaims != null && int.TryParse(userClaims.Value, out int userID))
@@ -107,29 +107,38 @@ namespace WebApi.Controllers
             }
         }
 
-       
-        [HttpGet("Get-Id")]
-        public IActionResult GetShopById([FromQuery]  int Id)
+
+        [Authorize]
+        [HttpGet("History-Sold")]
+        public IActionResult ProductSold(int shopId)
         {
             try
             {
-               var Result = _iShopService.GetShopByID(Id);
-                if (Result != null)
+                var userClaims = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+                if (userClaims != null && int.TryParse(userClaims.Value, out int userID))
                 {
-                    return Ok(Result);
+                    var tokenStatus = _token.CheckTokenStatus(userID);
+
+                    if (tokenStatus == StatusToken.Expired)
+                    {
+                        // Token không còn hợp lệ, từ chối yêu cầu
+                        return Unauthorized("The token is no longer valid. Please log in again.");
+                    }
+                   
+                        var list = _iShopService.GetProductSold(shopId, userID);
+                      
+                        return Ok(list);
+                  
                 }
-                else
-                {
-                    return NotFound("Not Found");
-                }
+                return BadRequest(new { message = "Invalid UserId." });
+
             }
             catch (Exception ex)
             {
                 return BadRequest(new { message = $"Error: {ex.Message}" });
             }
         }
-
-    }  
+    }
 
 }
 

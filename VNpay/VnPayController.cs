@@ -1,10 +1,7 @@
 ﻿
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using Org.BouncyCastle.Asn1.X9;
 using System.Security.Claims;
 using WebApi.Dto;
-using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
 using WebApi.TokenConfig;
@@ -79,7 +76,6 @@ namespace WebApi.VNpay
             }
             catch (Exception ex)
             {
-                // Xử lý ngoại lệ, có thể ghi log
                 return BadRequest(new { error = "An error occurred", message = ex.Message });
             }
         }

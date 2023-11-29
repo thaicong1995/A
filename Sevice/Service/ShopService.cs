@@ -3,6 +3,7 @@ using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 
 namespace WebApi.Sevice.Service
@@ -11,10 +12,12 @@ namespace WebApi.Sevice.Service
     {
         private readonly MyDb _myDb;
         private readonly IReveneuService _iRevenueService;
-        public ShopService(MyDb myDb, IReveneuService revenueService)
+        private readonly IRepository _iRepository;
+        public ShopService(MyDb myDb, IReveneuService revenueService, IRepository repository )
         {
             _myDb = myDb;
             _iRevenueService = revenueService;
+            _iRepository = repository;
         }
 
         public List<Shop> GetShops()
@@ -62,7 +65,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop =_myDb.Shops.FirstOrDefault(s => s.UserId == userId);
+                Shop shop = _iRepository.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -114,7 +117,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _myDb.Shops.SingleOrDefault(s => s.UserId == userId);
+                Shop shop = _iRepository.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -144,7 +147,7 @@ namespace WebApi.Sevice.Service
                     // Lưu thay đổi vào cơ sở dữ liệu
                     _myDb.SaveChanges();
 
-                    return "Updated success !"; // Cập nhật thành công
+                    return "Updated success !";
                 }
                 else
                 {
@@ -154,14 +157,32 @@ namespace WebApi.Sevice.Service
             }
             catch (Exception e)
             {
-                throw new Exception($"An error occurred: {e.Message}"); ; // Lỗi xảy ra
+                throw new Exception($"An error occurred: {e.Message}");  // Lỗi xảy ra
             }
 
         }
 
-        public Shop GetShopByID(int ShopId)
+
+        public List<OrderDetails> GetProductSold(int shopId, int userId)
         {
-            return _myDb.Shops.FirstOrDefault(s => s.Id == ShopId);
+            try
+            {
+                var shopExists = _iRepository.CheckshopByUserId(userId, shopId);
+                if (shopExists)
+                {
+                    Console.WriteLine("Shop exists for the user.");
+                    var ProductSold = _iRepository.ProductSold(shopId);
+
+                    return ProductSold;
+                }
+
+                throw new ApplicationException("Invalid UserId or shop does not exist for the user.");
+
+            }
+            catch (Exception ex)
+            {
+                throw new ApplicationException("An error occurred while fetching sold products.");
+            }
         }
     }
 }

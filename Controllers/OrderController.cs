@@ -84,7 +84,6 @@ namespace WebApi.Controllers
                 }
                 else
                 {
-                    // Invalid or missing userID in the token
                     return BadRequest(new { message = "Invalid UserId." });
                 }
             }

@@ -163,8 +163,9 @@ namespace WebApi.Migrations
                     b.Property<decimal>("Value")
                         .HasColumnType("decimal(18,2)");
 
-                    b.Property<int>("_discountStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("_discountStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 
@@ -229,11 +230,13 @@ namespace WebApi.Migrations
                     b.Property<int>("UserId")
                         .HasColumnType("int");
 
-                    b.Property<int>("_orderStatus")
-                        .HasColumnType("int");
+                    b.Property<string>("_orderStatus")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
-                    b.Property<int>("payMethod")
-                        .HasColumnType("int");
+                    b.Property<string>("payMethod")
+                        .IsRequired()
+                        .HasColumnType("nvarchar(max)");
 
                     b.HasKey("Id");
 

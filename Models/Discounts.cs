@@ -13,7 +13,14 @@ namespace WebApi.Models
         public DateTime StartDate { set; get; } = DateTime.Now;
         [JsonPropertyName("EndDate")]
         [JsonIgnore]
-        public DateTime EndDate { set; get; } 
+        public DateTime EndDate { set; get; }
         public DiscountStatus _discountStatus { set; get; }
+        public string DiscountStatusString
+        {
+            get
+            {
+                return _discountStatus.ToString();
+            }
+        }
     }
 }
