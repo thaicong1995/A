@@ -52,7 +52,7 @@ public class BackGroundService : IHostedService, IDisposable
                     .ToList();
 
                 foreach (var order in ordersToUpdate)
-                { 
+                {  
                     // Cập nhật doanh thu cho cửa hàng
                     var shop = scopedMyDb.Revenues.FirstOrDefault(shop => shop.ShopId == order.ShopId);
                     if (shop != null)

@@ -4,7 +4,7 @@ namespace WebApi.Models.Enum
 {
     public enum DiscountStatus
     {
-        [EnumMember(Value = "Active")]
+        [EnumMember(Value = " ")]
         Active,
         [EnumMember(Value = "Expried")]
         Expried,

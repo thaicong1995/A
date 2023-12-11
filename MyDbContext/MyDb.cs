@@ -38,8 +38,8 @@ namespace WebApi.MyDbContext
             modelBuilder.Entity<Product>()
                  .Property(p => p.Price)
                  .HasColumnType("decimal(18,2)");
-            modelBuilder.Entity<Wallet>()
 
+            modelBuilder.Entity<Wallet>()
                .Property(p => p.Monney)
                .HasColumnType("decimal(18,2)");
 

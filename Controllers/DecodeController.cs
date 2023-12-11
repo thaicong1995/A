@@ -8,6 +8,8 @@ using Microsoft.AspNetCore.Authorization;
 using WebApi.Sevice.Service;
 using WebApi.TokenConfig;
 using WebApi.Models;
+using WebApi.Sevice.Interface;
+using WebApi.Dto;
 
 [Route("api")]
 [ApiController]
@@ -23,35 +25,56 @@ public class DecodeController : ControllerBase
     }
 
 
+    [Authorize]
     [HttpGet("decode")]
-    public ActionResult<User> DecodeToken(string token)
+    public ActionResult<WalletDto> DecodeToken()
     {
-        var principal = _token.DecodeToken(token);
-        if (principal == null)
+        try
         {
-            return BadRequest("Invalid token");
+            var userIdClaim = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim == null || !int.TryParse(userIdClaim.Value, out int userId))
+            {
+                return Unauthorized();
+            }
+
+            var authorizationHeader = HttpContext.Request.Headers["Authorization"];
+            var token = authorizationHeader.ToString().Replace("Bearer ", "");
+
+            var principal = _token.DecodeToken(token);
+
+            if (principal == null)
+            {
+                return BadRequest("Invalid token");
+            }
+
+            var userWithWallet = _token.GetUserWithWallet(principal);
+
+            var nameClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.Name);
+
+            if (nameClaim == null)
+            {
+                return BadRequest("User information not full claim");
+            }
+
+            string userName = nameClaim.Value;
+
+            if (userId != int.Parse(userIdClaim.Value))
+            {
+                return Unauthorized("Fail token decode. (#user)");
+            }
+
+            return Ok(userWithWallet);
         }
-
-        // Lấy thông tin người dùng từ các claim
-        var userIdClaim = principal.Claims.FirstOrDefault(x => x.Type == ClaimTypes.NameIdentifier);
-        
-
-        if (userIdClaim == null)
+        catch (Exception ex)
         {
-            return BadRequest("User information is incomplete in the token.");
+
+            return BadRequest("Error decoding token");
         }
-
-        int userId = int.Parse(userIdClaim.Value);
-        
-
-        // Tạo đối tượng người dùng từ thông tin trong token
-        User user = new User
-        {
-            Id = userId,
-           
-        };
-
-        return Ok(user);
     }
-
 }
+    
+
+
+
+

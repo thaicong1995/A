@@ -26,11 +26,13 @@ namespace WebApi.Controllers
             _token = token;
         }
 
+        [Authorize]
         [HttpPost("create")]
         public IActionResult CreateOrder([FromBody] List<int> selectedProductIds)
         {
             try
             {
+
                 var userClaims = HttpContext.User.FindFirst(ClaimTypes.NameIdentifier);
                 if (userClaims != null && int.TryParse(userClaims.Value, out int userId))
                 {

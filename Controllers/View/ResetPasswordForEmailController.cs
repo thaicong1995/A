@@ -22,7 +22,7 @@ namespace WebApi.Controllers.View
             }
             else
             {
-                return View("ResetPasswordError");
+                return View("PPP");
             }
         }
 

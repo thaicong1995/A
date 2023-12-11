@@ -15,6 +15,7 @@ namespace WebApi.Controllers
     [ApiController]
     public class ProductController : ControllerBase
     {
+
         private readonly IProductService _iProductService;
 
         private readonly Token _token;
@@ -25,7 +26,7 @@ namespace WebApi.Controllers
             _token = token;
         }
 
-       
+
 
         [HttpGet("GetProduct-Id")]
         public IActionResult GetShopById([FromQuery] int Id)
@@ -125,7 +126,7 @@ namespace WebApi.Controllers
 
         [Authorize]
         [HttpGet("GetAll-IdShop")]
-        public IActionResult GetAllByIdShop([FromQuery]int ShopID)
+        public IActionResult GetAllByIdShop([FromQuery] int ShopID)
         {
             try
             {
@@ -142,7 +143,7 @@ namespace WebApi.Controllers
                     var products = _iProductService.GetAllByShopID(ShopID);
 
                     if (products != null && products.Any())
-                    {                 
+                    {
                         return Ok(products);
                     }
                     else
@@ -203,11 +204,33 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpGet("search")]
-        public object SearchProducts([FromQuery]string keyword)
+        [HttpGet("images/product/{productId}")]
+        public IActionResult GetProductImage(int productId)
         {
             try
-            { 
+            {
+                var product = _iProductService.GetProductByID(productId);
+
+                if (product == null || string.IsNullOrEmpty(product.ImagePath))
+                {
+                    return NotFound("Image not found!");
+                }
+
+                var imageBytes = _iProductService.GetProductImageBytes(product.ImagePath);
+                return File(imageBytes, "image/jpeg"); // Điều chỉnh loại nội dung tùy thuộc
+            }
+            catch (Exception e)
+            {
+                return StatusCode(500, $"An error occurred: {e.Message}");
+            }
+        }
+
+
+        [HttpGet("search")]
+        public object SearchProducts([FromQuery] string keyword)
+        {
+            try
+            {
                 var products = _iProductService.SearchProducts(keyword);
 
                 if (products == null)
@@ -225,5 +248,5 @@ namespace WebApi.Controllers
 
     }
 }
-    
+
 

@@ -1,5 +1,6 @@
 ﻿using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Razor;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -32,7 +33,9 @@ builder.Services.AddScoped<IReveneuService,RevenueService>();
 builder.Services.AddScoped<IDiscountService,DiscountService>();
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAddCardATMSevice, AddCardATMSevice>();
-builder.Services.AddScoped<IRepository, Repository>(); 
+builder.Services.AddScoped<IRepository, Repository>();
+
+
 builder.Services.AddScoped<Token>();
 builder.Services.AddSingleton<BackGroundService>();
 builder.Services.AddTransient<EmailService>();
@@ -112,7 +115,7 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowOrigins", builder =>
     {
-        builder.WithOrigins("http://localhost:3000", "http://127.0.0.1:5500")
+        builder.WithOrigins("http://localhost:3000")
             .AllowAnyHeader()
             .WithMethods("POST", "GET", "OPTIONS")
             .AllowCredentials();
@@ -145,11 +148,20 @@ if (app.Environment.IsDevelopment())
 
     });
 }
+app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowOrigins");
 app.UseAuthentication();
 app.UseAuthorization(); // Đảm bảo đặt UseAuthorization ở đây
 
+//WebSocket
+var webSocketOptions = new WebSocketOptions
+{
+    KeepAliveInterval = TimeSpan.FromSeconds(2),
+};
+app.UseWebSockets(webSocketOptions);
+
+//Email
 app.UseEndpoints(endpoints =>
 {
     endpoints.MapControllerRoute(
@@ -159,20 +171,10 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllerRoute(
         name: "UpdatePassword",
         pattern: "api/ResetPasswordForEmail/UpdatePassword",
-        defaults: new { controller = "ResetPasswordForEmail", action = "Reset-Password" }
+        defaults: new { controller = "ResetPasswordForEmail", action = "ResetPassword" }
     );
 });
 
-
-app.UseHttpsRedirection();
-
-app.UseAuthentication();
-
 app.MapControllers();
-//WebSocket
-var webSocketOptions = new WebSocketOptions
-{
-    KeepAliveInterval = TimeSpan.FromMinutes(2),
-};
-app.UseWebSockets(webSocketOptions);
+
 app.Run();

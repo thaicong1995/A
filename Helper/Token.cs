@@ -3,6 +3,7 @@ using Microsoft.IdentityModel.Tokens;
 using System.IdentityModel.Tokens.Jwt;
 using System.Security.Claims;
 using System.Text;
+using WebApi.Dto;
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
@@ -22,7 +23,8 @@ namespace WebApi.TokenConfig
         {
             List<Claim> claims = new List<Claim> {
                 new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                
+                new Claim(ClaimTypes.Name, user.Name),
+
         };
 
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Token256").Value!)); // Sử dụng khóa 256 bit
@@ -38,6 +40,31 @@ namespace WebApi.TokenConfig
 
             return jwt;
         }
+
+        public WalletDto GetUserWithWallet(ClaimsPrincipal principal)
+        {
+            var userIdClaim = principal.FindFirst(ClaimTypes.NameIdentifier);
+
+            if (userIdClaim != null && int.TryParse(userIdClaim.Value, out int userId))
+            {
+                var user = _myDb.Users.FirstOrDefault(u => u.Id == userId);
+
+                if (user != null)
+                {
+                    var wallet = _myDb.Wallets.FirstOrDefault(w => w.UserId == userId);
+
+                    return new WalletDto
+                    {
+                        UserId = user.Id,
+                        Name = user.Name,
+                        Wallet = wallet
+                    };
+                }
+            }
+
+            return null;
+        }
+
 
         public ClaimsPrincipal DecodeToken(string token)
         {
@@ -59,6 +86,7 @@ namespace WebApi.TokenConfig
 
                 SecurityToken securityToken;
                 var principal = tokenHandler.ValidateToken(token, tokenValidationParameters, out securityToken);
+                var nameClaim = principal.FindFirst(ClaimTypes.Name);
                 Console.WriteLine(principal);
                 return principal;
             }

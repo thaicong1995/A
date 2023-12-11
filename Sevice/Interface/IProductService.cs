@@ -12,6 +12,8 @@ namespace WebApi.Sevice.Interface
         List<Product> GetAllByShopID(int ShopId);
         List<Object> SearchProducts(string keyword);
         List<Product> GetAll(int page = 1);
+        byte[] GetProductImageBytes(string imagePath);
+
     }
 
 }

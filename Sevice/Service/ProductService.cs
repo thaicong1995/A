@@ -54,31 +54,16 @@ namespace WebApi.Sevice.Service
                         newProduct._productStatus = ProductStatus.OutOfStock;
                     }
 
+
                     if (image != null && image.Length > 0)
                     {
-                        string imageUrl = SaveImage(image);
-
-                        string shopFolder = Path.Combine(PathImgFoder, shop.ShopName); // Tạo đường dẫn tới thư mục cửa hàng
-                        if (!Directory.Exists(shopFolder))
-                        {
-                            Directory.CreateDirectory(shopFolder); // Tạo thư mục cửa hàng nếu chưa tồn tại
-                        }
-
-                        string FileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                        string filePath = Path.Combine(shopFolder, FileName);
-
-                        using (var stream = new FileStream(filePath, FileMode.Create))
-                        {
-                            image.CopyTo(stream);
-                        }
-
-                        newProduct.ImagePath = filePath; // Lưu đường dẫn ảnh
+                        string imagePath = SaveProductImage(image, shop.ShopName);
+                        newProduct.ImagePath = imagePath;
 
                         _myDb.Products.Add(newProduct);
                         _myDb.SaveChanges();
 
                         return "Product added successfully!";
-
                     }
                     else
                     {
@@ -96,37 +81,32 @@ namespace WebApi.Sevice.Service
             }
         }
 
-        private string SaveImage(IFormFile image)
+        private string SaveProductImage(IFormFile image, string shopName)
         {
             try
             {
-                if (image != null && image.Length > 0)
+                string shopFolder = Path.Combine(PathImgFoder, shopName);
+                if (!Directory.Exists(shopFolder))
                 {
-                    byte[] imageBytes;
-                    using (var memoryStream = new MemoryStream())
-                    {
-                        image.CopyTo(memoryStream);
-                        imageBytes = memoryStream.ToArray();
-                    }
-
-                    string uniqueFileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
-                    string filePath = Path.Combine(PathImgFoder, uniqueFileName);
-
-                    File.WriteAllBytes(filePath, imageBytes);
-
-                    return filePath;
-
+                    Directory.CreateDirectory(shopFolder);
                 }
-                return "Not Img";
 
+                string fileName = Guid.NewGuid().ToString() + Path.GetExtension(image.FileName);
+                string filePath = Path.Combine(shopFolder, fileName);
+
+                using (var stream = new FileStream(filePath, FileMode.Create))
+                {
+                    image.CopyTo(stream);
+                }
+
+                return filePath;
             }
             catch (Exception e)
             {
-                throw new Exception($"An error occurred: {e.Message}");
+                throw new Exception($"An error occurred while saving the image: {e.Message}");
             }
         }
 
-    //Get product cùng ảnh xuất hiện (fail)
 
         public Product GetProductByID(int productId)
         {
@@ -218,7 +198,7 @@ namespace WebApi.Sevice.Service
 
                 if (image != null && image.Length > 0)
                 {
-                    string imageUrl = SaveImage(image);
+                    string imageUrl = SaveProductImage(image, shop.ShopName);
                     if (!string.IsNullOrEmpty(imageUrl))
                     {
                         product.ImagePath = imageUrl;
@@ -262,17 +242,17 @@ namespace WebApi.Sevice.Service
                     cartItem.Price = price;
                     cartItem.PriceQuantity = cartItem.Price * cartItem.Quantity;
 
-                    _myDb.SaveChanges(); 
+                    _myDb.SaveChanges();
                     return true;
                 }
                 else
                 {
-                    return false; 
+                    return false;
                 }
             }
             catch (Exception e)
             {
-                return false; 
+                return false;
             }
         }
 
@@ -284,7 +264,7 @@ namespace WebApi.Sevice.Service
                 // Kiểm tra sự tồn tại của cửa hàng với shopId
                 if (!_iRepository.IsShopActive(ShopId))
                 {
-                    throw new Exception ("Shop not found!");
+                    throw new Exception("Shop not found!");
                 }
 
                 List<Product> products = _iRepository.GetProductsByShop(ShopId);
@@ -331,8 +311,6 @@ namespace WebApi.Sevice.Service
                 results.Add(new { Message = "Không tìm thấy kết quả." });
             }
             return results;
-
-            
         }
 
         public List<Product> GetAll(int page = 1)
@@ -352,7 +330,22 @@ namespace WebApi.Sevice.Service
             }
         }
 
+        public byte[] GetProductImageBytes(string imagePath)
+        {
+            try
+            {
+                if (string.IsNullOrEmpty(imagePath) || !File.Exists(imagePath))
+                {
+                    throw new FileNotFoundException("Image not found!");
+                }
 
+                return File.ReadAllBytes(imagePath);
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"An error occurred: {e.Message}");
+            }
+        }
 
     }
 }

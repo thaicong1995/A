@@ -12,8 +12,8 @@ using WebApi.MyDbContext;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(MyDb))]
-    [Migration("20231126092934_mydb")]
-    partial class mydb
+    [Migration("20231211181638_Mydb")]
+    partial class Mydb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
