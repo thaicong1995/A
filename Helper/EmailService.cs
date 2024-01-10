@@ -10,8 +10,8 @@ public class EmailService
 
     public EmailService()
     {
-        this.apiKey = "9f32b64d3468220276b2386f9ef6b2a1-1c7e8847-817e449e";
-        this.domain = "sandboxa58c4a4fc7ab4c1f92bcb203d73f88e0.mailgun.org";
+        this.apiKey = "d707105a3805294a25d5d9ff50ffb065-1900dca6-224b0e9a";
+        this.domain = "sandbox5cdb0913d81245c485e4b3a6a12d8a2d.mailgun.org";
     }
     public bool SendActivationEmail(string toEmail, string activationLink)
     {
@@ -31,19 +31,19 @@ public class EmailService
 
             if (response.IsSuccessful)
             {
-                Console.WriteLine($"Email sent to {toEmail} successfully.");
+                Console.WriteLine($"Password reset email sent to {toEmail} successfully.");
                 return true;
             }
             else
             {
-                Console.WriteLine($"Failed to send email to {toEmail}. Error: {response.ErrorMessage}");
+                Console.WriteLine($"Failed to send password reset email to {toEmail}. Error: {response.ErrorMessage}");
                 return false;
             }
         }
         catch (Exception ex)
         {
             // Xử lý lỗi xảy ra trong quá trình gửi email.
-            Console.WriteLine($"An error occurred while sending email to {toEmail}. Error: {ex.Message}");
+            Console.WriteLine($"An error occurred while sending password reset email to {toEmail}. Error: {ex.Message}");
             return false;
         }
     }

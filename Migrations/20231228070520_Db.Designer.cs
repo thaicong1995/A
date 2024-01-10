@@ -12,8 +12,8 @@ using WebApi.MyDbContext;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(MyDb))]
-    [Migration("20231211181638_Mydb")]
-    partial class Mydb
+    [Migration("20231228070520_Db")]
+    partial class Db
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -358,6 +358,9 @@ namespace WebApi.Migrations
                     b.Property<string>("Email")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
+
+                    b.Property<DateTime?>("ExpLink")
+                        .HasColumnType("datetime2");
 
                     b.Property<string>("Name")
                         .IsRequired()

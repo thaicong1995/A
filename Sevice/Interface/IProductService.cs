@@ -10,6 +10,7 @@ namespace WebApi.Sevice.Interface
         string UpdateProduct(int userId, int shopId, int productId, ProductDto productDto, IFormFile image);
         bool UpdateCart(int productId, string productName, decimal price);
         List<Product> GetAllByShopID(int ShopId);
+        List<Product> GetAllByShopIDAdmin(int shopId, int userId);
         List<Object> SearchProducts(string keyword);
         List<Product> GetAll(int page = 1);
         byte[] GetProductImageBytes(string imagePath);

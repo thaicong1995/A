@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 
-namespace WebApi.VNpay
+namespace WebApi.Helper.VNpay
 {
 
     public class PaymentResponseModel

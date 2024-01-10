@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WebApi.Migrations
 {
-    public partial class Mydb : Migration
+    public partial class Db : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -192,7 +192,8 @@ namespace WebApi.Migrations
                     Create = table.Column<DateTime>(type: "datetime2", nullable: false),
                     Update = table.Column<DateTime>(type: "datetime2", nullable: true),
                     _userStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    ActivationToken = table.Column<string>(type: "nvarchar(max)", nullable: true)
+                    ActivationToken = table.Column<string>(type: "nvarchar(max)", nullable: true),
+                    ExpLink = table.Column<DateTime>(type: "datetime2", nullable: true)
                 },
                 constraints: table =>
                 {

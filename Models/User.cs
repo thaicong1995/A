@@ -28,6 +28,8 @@ namespace WebApi.Models
         public UserStatus _userStatus { get; set; }
 
         public string? ActivationToken { get; set; } = "abc";
+
+        public DateTime? ExpLink { get; set; }
         public string UserStatusString
         {
             get

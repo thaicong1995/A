@@ -125,8 +125,8 @@ namespace WebApi.Controllers
         }
 
         [Authorize]
-        [HttpGet("GetAll-IdShop")]
-        public IActionResult GetAllByIdShop([FromQuery] int ShopID)
+        [HttpGet("GetAll-IdShop/{ShopID}")]
+        public IActionResult GetAllByIdShop( int ShopID)
         {
             try
             {
@@ -140,7 +140,7 @@ namespace WebApi.Controllers
                         // Token không còn hợp lệ, từ chối yêu cầu
                         return Unauthorized("Token has expired. Please log in again.");
                     }
-                    var products = _iProductService.GetAllByShopID(ShopID);
+                    var products = _iProductService.GetAllByShopIDAdmin(ShopID, userId);
 
                     if (products != null && products.Any())
                     {
@@ -150,7 +150,6 @@ namespace WebApi.Controllers
                     {
                         return NotFound("No products found for this shop.");
                     }
-
                 }
                 else
                 {

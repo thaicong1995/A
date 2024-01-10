@@ -6,7 +6,7 @@ using WebApi.Models.Enum;
 using WebApi.MyDbContext;
 using WebApi.TokenConfig;
 
-namespace WebApi.VNpay
+namespace WebApi.Helper.VNpay
 {
     [Route("api/[controller]")]
     [ApiController]
@@ -61,11 +61,11 @@ namespace WebApi.VNpay
                 if (vnp_ResponseCode == "00")
                 {
                     var orderInfo = vnp_OrderInfo;
-                  
 
-                            _vnPayService.UpdateOrderAndCartStatus(orderInfo);
+
+                    _vnPayService.UpdateOrderAndCartStatus(orderInfo);
                     return Ok("sucess!");
-                      
+
                 }
 
                 else

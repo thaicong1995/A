@@ -12,12 +12,14 @@ namespace WebApi.Sevice.Service
     {
         private readonly MyDb _myDb;
         private readonly IReveneuService _iRevenueService;
-        private readonly IRepository _iRepository;
-        public ShopService(MyDb myDb, IReveneuService revenueService, IRepository repository )
+        private readonly IShopRepo _IShopRepo;
+        private readonly IOrderRepo _IOrderRepo;
+        public ShopService(MyDb myDb, IReveneuService revenueService, IShopRepo repository, IOrderRepo orderRepo )
         {
             _myDb = myDb;
             _iRevenueService = revenueService;
-            _iRepository = repository;
+            _IShopRepo = repository;
+            _IOrderRepo = orderRepo;
         }
 
         public List<Shop> GetShops()
@@ -65,7 +67,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _iRepository.GetShopByUser(userId);
+                Shop shop = _IShopRepo.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -117,7 +119,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _iRepository.GetShopByUser(userId);
+                Shop shop = _IShopRepo.GetShopByUser(userId);
 
                 if (shop == null)
                 {
@@ -167,11 +169,11 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                var shopExists = _iRepository.CheckshopByUserId(userId, shopId);
+                var shopExists = _IShopRepo.CheckshopByUserId(userId, shopId);
                 if (shopExists)
                 {
                     Console.WriteLine("Shop exists for the user.");
-                    var ProductSold = _iRepository.ProductSold(shopId);
+                    var ProductSold = _IOrderRepo.ProductSold(shopId);
 
                     return ProductSold;
                 }

@@ -15,16 +15,26 @@ namespace WebApi.Controllers.View
         [HttpGet("Reset-Password")]
         public IActionResult ResetPassword([FromQuery] string token)
         {
-            if (_resetService.IsValidResetToken(token))
-            {
+            var user = _resetService.GetUserByActivationToken(token);
 
-                return View("ResetPassword");
+            if (user != null)
+            {
+                if (user.ExpLink == null || user.ExpLink > DateTime.Now)
+                {
+                    return View("ResetPassword");
+                }
+                else
+                {
+                    ViewData["ErrorMessage"] = "Liên kết đặt lại mật khẩu đã hết hạn.";
+                }
             }
             else
             {
-                return View("PPP");
+                ViewData["ErrorMessage"] = "Mã thông báo đặt lại không hợp lệ.";
             }
+            return View("ResetPassword");
         }
+
 
         [HttpPost("Reset-Password")]
         public IActionResult UpdatePassword([FromForm] string newPassword, [FromQuery] string token)
@@ -35,12 +45,19 @@ namespace WebApi.Controllers.View
 
                 if (user != null)
                 {
-                    _resetService.UpdatePassword(user.Id, newPassword);
+                    bool passwordUpdated = _resetService.UpdatePassword(user.Id, newPassword);
 
-                    ViewBag.SuccessMessage = "Mật khẩu đã được đổi thành công.";
-
-                    // Trả về trang ResetPassword với thông báo thành công
-                    return View("ResetPassword");
+                    if (passwordUpdated)
+                    {
+                        ViewBag.SuccessMessage = "Mật khẩu đã được đổi thành công.";
+                        // Trả về trang ResetPassword với thông báo thành công
+                        return View("ResetPassword");
+                    }
+                    else
+                    {
+                        ViewBag.ErrorMessage = "The reset link has expired.";
+                        return View("PPP");
+                    }
                 }
             }
 

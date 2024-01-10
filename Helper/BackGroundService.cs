@@ -48,7 +48,7 @@ public class BackGroundService : IHostedService, IDisposable
                 // Lấy tất cả các đơn hàng có `RefunTime` tương ứng với thời gian hiện tại
 
                 var ordersToUpdate = scopedMyDb.Orders
-                    .Where(order => order.RefunTime <= now && order._orderStatus.Equals( OrderStatus.Success.ToString()) && !order.IsReveneu)
+                    .Where(order => order.RefunTime <= now && order._orderStatus == OrderStatus.Success && !order.IsReveneu)
                     .ToList();
 
                 foreach (var order in ordersToUpdate)

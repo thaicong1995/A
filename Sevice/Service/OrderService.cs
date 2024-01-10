@@ -13,19 +13,27 @@ namespace WebApi.Sevice.Service
         private readonly MyDb _myDb;
         private readonly IReveneuService _iRevenueService;
         private readonly IDiscountService _iDiscountService;
-        private readonly IRepository _iRepository;
-        public OrderService(MyDb myDb, IReveneuService iRevenueService, IDiscountService iDiscountService, IRepository repository)
+        private readonly IOrderRepo _IOrderRepo;
+        private readonly IProductRepo _IProductRepo;
+        private readonly ICartRepo _ICartRepo;
+        private readonly IWalletRepo _IWalletRepo;
+
+        public OrderService(MyDb myDb, IReveneuService iRevenueService, IDiscountService iDiscountService,
+            IOrderRepo repository, ICartRepo cartRepo, IProductRepo productRepo, IWalletRepo walletRepo)
         {
             _myDb = myDb;
-            _iRepository = repository;
+            _IOrderRepo = repository;
             _iRevenueService = iRevenueService;
             _iDiscountService = iDiscountService;
+            _IProductRepo = productRepo;
+            _ICartRepo = cartRepo;
+            _IWalletRepo = walletRepo;
         }
 
         public string GenerateOrderNo(int userId)
         {
             DateTime now = DateTime.Now;
-            string orderNo = $"ORD-{now:yyyyMMddHH}UID{userId}";
+            string orderNo = $"ORD-{now:yyyyMMddHHss}UID{userId}";
 
             return orderNo;
         }
@@ -42,15 +50,15 @@ namespace WebApi.Sevice.Service
             {
                 string orderNo = GenerateOrderNo(userId);
                 List<Order> orders = new List<Order>();
-              
+
                 foreach (var productId in selectedProductIds)
                 {
                     // Kiểm tra xem sản phẩm đã được chọn trong giỏ hàng hay chưa
-                    CartItem cartItem = _iRepository.GetCartItemByUser(productId, userId);
+                    CartItem cartItem = _ICartRepo.GetCartItemByUser(productId, userId);
                     if (cartItem != null)
                     {
                         // Kiểm tra số lượng sản phẩm có đủ không
-                        Product product = _iRepository.GetProductById(productId);
+                        Product product = _IProductRepo.GetProductById(productId);
 
                         if (product != null && product.Quantity >= cartItem.Quantity && product._productStatus == ProductStatus.InOfStock)
                         {
@@ -74,7 +82,7 @@ namespace WebApi.Sevice.Service
                             };
 
                             orders.Add(newOrder);
-                           
+
                         }
                         else
                         {
@@ -112,12 +120,14 @@ namespace WebApi.Sevice.Service
                     throw new ArgumentException("Please fill in all information completely");
                 }
 
-                List<Order> orders = _iRepository.GetOrdersByOrderNo(OrderNo, userId);
-                var wallet = _iRepository.GetWalletByUserId(userId);
+                List<Order> orders = _IOrderRepo.GetOrdersByOrderNo(OrderNo, userId);
+                var selectedCartItems = _ICartRepo.GetSelectedCartItemsByUserId(userId);
+
+                var wallet = _IWalletRepo.GetWalletByUserId(userId);
                 CheckOrderStatus(orders, userId);
 
                 // Check discount tồn tại hay k
-                ProcessOrderDiscount(orders, userId, orderDto.DiscountId,orderDto);
+                ProcessOrderDiscount(orders, userId, orderDto.DiscountId, orderDto);
                 decimal totalOrderPrice = 0.0m;
                 if (wallet == null)
                 {
@@ -140,7 +150,10 @@ namespace WebApi.Sevice.Service
 
                     UpdateWalletBalance(order, wallet);
 
-                    _iRepository.GetSelectedCartItemsByUserId(userId);
+                    foreach (var cartItem in selectedCartItems.Where(c => c.ProductId == order.ProductId))
+                    {
+                        cartItem.isSelect = true;
+                    }
 
                 }
 
@@ -185,7 +198,7 @@ namespace WebApi.Sevice.Service
         private void UpdatQuantityProduct(Order order)
         {
 
-            var product = _iRepository.GetProductById(order.ProductId);
+            var product = _IProductRepo.GetProductById(order.ProductId);
 
             if (product != null)
             {
@@ -203,7 +216,7 @@ namespace WebApi.Sevice.Service
             }
         }
 
-       
+
         // Xử lý dícount
         private void ProcessOrderDiscount(List<Order> orders, int userId, int? discountId, OrderDto orderDto)
         {
@@ -266,12 +279,12 @@ namespace WebApi.Sevice.Service
         {
             foreach (var order in orders)
             {
-                order.DiscountId = null; 
-                order.TotalPrice = order.Price * order.Quantity; 
+                order.DiscountId = null;
+                order.TotalPrice = order.Price * order.Quantity;
             }
         }
 
-       
+
 
         //Sản phẩm k có trong order - refun (fix xong)
         //Cùng sản phẩm khác order nhưng đã bị refun, Order hiện tại k refun được (fix xong)
@@ -282,7 +295,7 @@ namespace WebApi.Sevice.Service
             {
                 DateTime currentTime = DateTime.Now;
                 // Kiểm tra xem sản phẩm có tồn tại trong đơn hàng không
-                var productInOrder = _iRepository.GetProductInOrder(OrderNo, productId);
+                var productInOrder = _IOrderRepo.GetProductInOrder(OrderNo, productId);
 
                 if (productInOrder == null)
                 {
@@ -299,7 +312,7 @@ namespace WebApi.Sevice.Service
                     throw new InvalidOperationException("The refund time has passed, and you cannot return this product.");
                 }
                 // Thực hiện hoàn trả cho sản phẩm
-                var product = _iRepository.GetProductById(productId);
+                var product = _IProductRepo.GetProductById(productId);
 
                 if (product != null)
                 {
@@ -315,7 +328,7 @@ namespace WebApi.Sevice.Service
                 productInOrder._orderStatus = OrderStatus.Refunded;
 
                 // Cập nhật ví 
-                var wallet = _iRepository.GetWalletByUserId(userId);
+                var wallet = _IWalletRepo.GetWalletByUserId(userId);
                 if (wallet != null)
                 {
                     wallet.Monney += productInOrder.TotalPrice;
@@ -328,6 +341,20 @@ namespace WebApi.Sevice.Service
             catch (Exception e)
             {
                 throw new Exception($"An error occurred: {e.Message}");
+            }
+        }
+
+        public List<Order> HistoryBuy(int userId)
+        {
+            try
+            {
+                var history = _IOrderRepo.HistoryBuy(userId);
+
+                return history;
+            }
+            catch (Exception ex)
+            {
+                throw new Exception($"An error occurred: {ex.Message}");
             }
         }
     }

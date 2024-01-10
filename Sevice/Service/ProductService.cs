@@ -2,9 +2,6 @@
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
-using System;
-using System.IO;
-using Microsoft.AspNetCore.Http;
 using WebApi.Sevice.Interface;
 using WebApi.Reposetory.Interface;
 
@@ -13,11 +10,15 @@ namespace WebApi.Sevice.Service
     public class ProductService : IProductService
     {
         private readonly MyDb _myDb;
-        private readonly IRepository _iRepository;
-        public ProductService(MyDb myDb, IRepository repository)
+        private readonly IProductRepo _IProductRepo;
+        private readonly IShopRepo _IShopRepo;
+        private readonly ICartRepo _ICartRepo;
+        public ProductService(MyDb myDb, IProductRepo repository, IShopRepo iShopRepo, ICartRepo iCartRepo)
         {
             _myDb = myDb;
-            _iRepository = repository;
+            _IProductRepo = repository;
+            _IShopRepo = iShopRepo;
+            _ICartRepo = iCartRepo;
         }
         string PathImgFoder = "C:\\Users\\thaic\\OneDrive\\Máy tính\\ImgP3";
 
@@ -26,7 +27,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                Shop shop = _iRepository.GetShopByID(ShopId);
+                Shop shop = _IShopRepo.GetShopByID(ShopId);
                 if (shop == null)
                 {
                     throw new Exception("Not Found!");
@@ -110,7 +111,7 @@ namespace WebApi.Sevice.Service
 
         public Product GetProductByID(int productId)
         {
-            return _iRepository.GetProductByID(productId);
+            return _IProductRepo.GetProductByID(productId);
         }
 
         public string UpdateProduct(int userId, int shopId, int productId, ProductDto productDto, IFormFile image)
@@ -118,7 +119,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Kiểm tra xem người dùng có quyền chỉnh sửa sản phẩm hay không
-                var shop = _iRepository.GetShopByID(shopId);
+                var shop = _IShopRepo.GetShopByID(shopId);
                 if (shop == null)
                 {
                     return "Shop not found!";
@@ -135,7 +136,7 @@ namespace WebApi.Sevice.Service
                 }
 
                 // Tìm sản phẩm cần chỉnh sửa
-                var product = _iRepository.GetProductByID(productId);
+                var product = _IProductRepo.GetProductByID(productId);
 
                 if (product == null)
                 {
@@ -233,7 +234,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _iRepository.GetCart(productId);
+                CartItem cartItem = _ICartRepo.GetCart(productId);
 
                 if (cartItem != null)
                 {
@@ -262,12 +263,48 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Kiểm tra sự tồn tại của cửa hàng với shopId
-                if (!_iRepository.IsShopActive(ShopId))
+                if (!_IShopRepo.IsShopActive(ShopId))
                 {
                     throw new Exception("Shop not found!");
                 }
 
-                List<Product> products = _iRepository.GetProductsByShop(ShopId);
+                List<Product> products = _IProductRepo.GetProductsByShop(ShopId);
+
+                return products;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"An error occurred: {e.Message}");
+            }
+        }
+
+        public List<Product> GetAllByShopIDAdmin(int shopId, int userId)
+        {
+            try
+            {
+                var shop = _IShopRepo.GetShopByID(shopId);
+                if (shop == null)
+                {
+                    throw new Exception("Shop not found!");
+                }
+
+                if (shop.UserId != userId)
+                {
+                    throw new Exception("You do not have access to this shop!");
+
+                }
+
+                if (shop._shopStatus != ShopStatus.Active)
+                {
+                    throw new Exception("You need to activate the shop!");
+                }
+                // Kiểm tra sự tồn tại của cửa hàng với shopId
+                if (!_IShopRepo.IsShopActive(shopId))
+                {
+                    throw new Exception("Shop not found!");
+                }
+
+                List<Product> products = _IProductRepo.GetProductsByShop(shopId);
 
                 return products;
             }
@@ -288,9 +325,9 @@ namespace WebApi.Sevice.Service
             IQueryable<Product> products = _myDb.Products;
 
             // so sánh keyword với shopName
-            Shop matchingShops = _iRepository.FindShopByKeyword(keyword);
+            Shop matchingShops = _IShopRepo.FindShopByKeyword(keyword);
 
-            List<Product> product = _iRepository.FindProductsByKeyword(keyword);
+            List<Product> product = _IProductRepo.FindProductsByKeyword(keyword);
 
             if (matchingShops != null || product.Any())
             {

@@ -20,22 +20,22 @@ namespace WebApi.Sevice.Service
         private readonly IShopService _iShopService;
         private readonly IWalletService _iWalletService;
         private readonly EmailService _emailService;
-        private readonly IRepository _iRepository;
+        private readonly IUserRepo _IUserRepo;
 
-        public UserService(MyDb myDb, Token token, IShopService shopService, IWalletService walletService, EmailService emailService, IRepository repository)
+        public UserService(MyDb myDb, Token token, IShopService shopService, IWalletService walletService, EmailService emailService, IUserRepo repository)
         {
             _myDb = myDb;
             _token = token;
             _iShopService = shopService;
             _iWalletService = walletService;
             _emailService = emailService;
-            _iRepository = repository;
+            _IUserRepo = repository;
         }
 
 
         public User GetUserByID(int UserId)
         {
-            return _iRepository.GetUserById(UserId);
+            return _IUserRepo.GetUserById(UserId);
         }
 
         //Chưa test trường hợp gửi mail thất bại (Nếu đăng ký thành công gửi mail fail hoặc hết hạn -- đã xong.)
@@ -62,9 +62,12 @@ namespace WebApi.Sevice.Service
 
                 // Tạo liên kết kích hoạt
                 string activationLink = "https://localhost:7212/api/activate?activationToken=" + activationToken;
-                _emailService.SendActivationEmail(user.Email, activationLink);
                 // Gửi liên kết kích hoạt cho người dùng 
-
+                if (_emailService.SendActivationEmail(user.Email, activationLink))
+                {
+                    user.ExpLink = DateTime.Now.AddMinutes(1);
+                    _myDb.SaveChanges();
+                }
                 _iShopService.CreateShopForUser(user);
                 _iWalletService.CreateWalletForUser(user);
 
@@ -80,9 +83,9 @@ namespace WebApi.Sevice.Service
         // Active bằng Email
         public bool ActivateUser(string activationToken)
         {
-            var user = _iRepository.GetUserByActivationToken(activationToken);
+            var user = _IUserRepo.GetUserByActivationToken(activationToken);
 
-            if (user != null)
+            if (user != null && user.ExpLink > DateTime.Now)
             {
                 user._userStatus = UserStatus.Active;
                 user.ActivationToken = null;
@@ -95,18 +98,24 @@ namespace WebApi.Sevice.Service
 
         public bool SendPasswordResetEmail(string email)
         {
-            var user = _iRepository.GetUserByEmail(email);
+            var user = _IUserRepo.GetUserByEmail(email);
 
             if (user != null)
             {
                 string resetToken = Guid.NewGuid().ToString();
                 user.ActivationToken = resetToken;
 
-                _myDb.SaveChanges();
 
                 string resetLink = "https://localhost:7212/api/ResetPasswordForEmail/Reset-Password?token=" + resetToken;
-                _emailService.SendPasswordResetEmail(user.Email, resetLink);
 
+
+                if (_emailService.SendPasswordResetEmail(user.Email, resetLink))
+                {
+                    user.ExpLink = DateTime.Now.AddMinutes(1);
+
+                }
+
+                _myDb.SaveChanges();
                 return true;
             }
 
@@ -119,7 +128,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Lấy user = email
-                User user = _iRepository.GetUserByEmail(userDto.Email);
+                User user = _IUserRepo.GetUserByEmail(userDto.Email);
 
                 if (user == null)
                     throw new Exception("User not found!");
@@ -145,10 +154,16 @@ namespace WebApi.Sevice.Service
             {
                 string newActivationToken = Guid.NewGuid().ToString();
                 user.ActivationToken = newActivationToken;
-                _myDb.SaveChanges();
 
                 string activationLink = "https://localhost:7212/api/activate?activationToken=" + newActivationToken;
-                _emailService.SendActivationEmail(user.Email, activationLink);
+                
+                if (_emailService.SendActivationEmail(user.Email, activationLink))
+                {
+                    user.ExpLink = DateTime.Now.AddMinutes(1);
+
+                }
+
+                _myDb.SaveChanges();
 
                 throw new Exception("Account has not been activated. Please check your email to activate your account.");
             }
@@ -158,7 +173,7 @@ namespace WebApi.Sevice.Service
         // tạo mới hoặc ghi đè token
         private void UpdateOrCreateAccessToken(User user)
         {
-            var existingToken = _iRepository.GetValidTokenByUserId(user.Id);
+            var existingToken = _IUserRepo.GetValidTokenByUserId(user.Id);
 
             if (existingToken != null)
             {
@@ -199,7 +214,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Lấy danh sách các token của người dùng
-                var userToken = _iRepository.GetValidTokenByUserId(userId);
+                var userToken = _IUserRepo.GetValidTokenByUserId(userId);
 
                 if (userToken != null)
                 {

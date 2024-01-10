@@ -8,25 +8,29 @@ using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 using WebApi.Sevice.Service;
 
-namespace WebApi.VNpay
+namespace WebApi.Helper.VNpay
 {
-    public class VnPayService 
+    public class VnPayService
     {
         private readonly IConfiguration _configuration;
         private readonly MyDb _myDb;
         private readonly VnPayLibrary _vnPayLibrary;
         private readonly IDiscountService _iDiscountService;
         private readonly IOrderService _iOrderservice;
-        private readonly IRepository _iRepository;
+        private readonly IOrderRepo _IOrderRepo;
+        private readonly IProductRepo _IProductRepo;
+        private readonly ICartRepo _ICartRepo;
         public VnPayService(IConfiguration configuration, MyDb myDb, VnPayLibrary vnPayLibrary,
-                                IDiscountService discountService, IOrderService orderservice, IRepository repository)
+                                IDiscountService discountService, IOrderService orderservice, IOrderRepo iOrderRepo, IProductRepo product, ICartRepo cartRepo)
         {
             _configuration = configuration;
             _myDb = myDb;
             _vnPayLibrary = vnPayLibrary;
             _iDiscountService = discountService;
             _iOrderservice = orderservice;
-            _iRepository = repository;
+            _IOrderRepo = iOrderRepo;
+            _IProductRepo = product;
+            _ICartRepo = cartRepo;
         }
 
         // Dữ kiệu chưa chưa trả thành công thì Discoint đã lưu ( fix xong)
@@ -35,9 +39,9 @@ namespace WebApi.VNpay
             var timeZoneById = TimeZoneInfo.FindSystemTimeZoneById(_configuration["TimeZoneId"]);
             var timeNow = TimeZoneInfo.ConvertTimeFromUtc(DateTime.UtcNow, timeZoneById);
             var tick = DateTime.Now.Ticks.ToString();
-            
+
             var pay = new VnPayLibrary();
-            List<Order> orders = _iRepository.GetOrdersByOrderNo(orderNo, userId);
+            List<Order> orders = _IOrderRepo.GetOrdersByOrderNo(orderNo, userId);
 
             decimal totalOrderPrice = 0.0m;
 
@@ -74,14 +78,14 @@ namespace WebApi.VNpay
                 order.RefunTime = DateTime.Now.AddMinutes(3);
                 order.payMethod = PayMethod.VnPay;
             }
-            
+
             _myDb.SaveChanges();
-            
+
             if (orders.Count == 0)
             {
                 throw new ArgumentException("orders not found---------- .", nameof(orderNo));
             }
-          
+
             int totalAmount = (int)(totalOrderPrice * 100);
             int discountIdValue = orderDto.DiscountId.HasValue ? orderDto.DiscountId.Value : 0;
             var urlCallBack = _configuration["PaymentCallBack:ReturnUrl"];
@@ -89,13 +93,13 @@ namespace WebApi.VNpay
             pay.AddRequestData("vnp_Version", _configuration["Vnpay:Version"]);
             pay.AddRequestData("vnp_Command", _configuration["Vnpay:Command"]);
             pay.AddRequestData("vnp_TmnCode", _configuration["Vnpay:TmnCode"]);
-            pay.AddRequestData("vnp_Amount", ((int)totalAmount).ToString());
+            pay.AddRequestData("vnp_Amount", totalAmount.ToString());
             pay.AddRequestData("vnp_CreateDate", timeNow.ToString("yyyyMMddHHmmss"));
             pay.AddRequestData("vnp_BankCode", "NCB");
             pay.AddRequestData("vnp_CurrCode", _configuration["Vnpay:CurrCode"]);
             pay.AddRequestData("vnp_IpAddr", pay.GetIpAddress(context));
             pay.AddRequestData("vnp_Locale", _configuration["Vnpay:Locale"]);
-            pay.AddRequestData("vnp_OrderInfo", $"{orderNo}");      
+            pay.AddRequestData("vnp_OrderInfo", $"{orderNo}");
             pay.AddRequestData("vnp_OrderType", "other");
             pay.AddRequestData("vnp_ReturnUrl", urlCallBack);
             pay.AddRequestData("vnp_TxnRef", tick);
@@ -115,13 +119,13 @@ namespace WebApi.VNpay
             {
                 List<Order> orders = _myDb.Orders.Where(o => o.OrderNo == orderNo && o._orderStatus == OrderStatus.WaitPay).ToList();
                 Console.WriteLine($" order:--------------------- {orderNo}");
-                
+
                 if (orders.Any())
                 {
                     foreach (var order in orders)
 
                     {
-                        var product = _iRepository.GetProductByID(order.ProductId);
+                        var product = _IProductRepo.GetProductByID(order.ProductId);
 
                         if (product != null)
                         {
@@ -143,14 +147,14 @@ namespace WebApi.VNpay
                             order._orderStatus = OrderStatus.Success;
                             order.OrderDate = DateTime.Now;
                             _myDb.Entry(order).State = EntityState.Modified;
-                                Console.WriteLine($"Updated order: {order.OrderNo}");
+                            Console.WriteLine($"Updated order: {order.OrderNo}");
                         }
 
                         //------
-                        _iRepository.GetSelectedCartItemsByUserId(order.UserId);
+                        _ICartRepo.GetSelectedCartItemsByUserId(order.UserId);
                         if (order.DiscountId != 0 && order.DiscountId != null)
                         {
-                            _iDiscountService.SaveDiscountByUserId(order.UserId,(int) order.DiscountId);
+                            _iDiscountService.SaveDiscountByUserId(order.UserId, (int)order.DiscountId);
                         }
                         _myDb.SaveChanges();
 

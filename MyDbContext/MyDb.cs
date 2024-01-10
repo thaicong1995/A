@@ -1,6 +1,6 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using WebApi.Models;
-using WebApi.VNpay;
+
 
 namespace WebApi.MyDbContext
 {

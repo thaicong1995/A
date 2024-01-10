@@ -10,5 +10,6 @@ namespace WebApi.Sevice.Interface
         void CalculateTotalPriceAndDiscount(List<Order> orders, OrderDto orderDto, int userId);
         void CalculateTotalPrice(List<Order> orders);
         Order RefundProduct(string OrderNo, int userId, int productId);
+        List<Order> HistoryBuy(int userId);
     }
 }

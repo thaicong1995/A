@@ -11,12 +11,15 @@ namespace WebApi.Sevice.Service
     public class RevenueService : IReveneuService
     {
         private readonly MyDb _myDb;
-        private readonly IRepository _iRepository;
+        private readonly IReveneuRepo _IReveneuRepo;
+        private readonly IShopRepo _IShopRepo;
 
-        public RevenueService(MyDb myDb, IRepository repository)
+        public RevenueService(MyDb myDb, IReveneuRepo repository, IShopRepo shopRepo)
         {
             _myDb = myDb;
-            _iRepository = repository;
+            _IReveneuRepo = repository;
+            _IShopRepo = shopRepo;
+
         }
 
         public Revenue CreateReveneuForShop(Shop shop)
@@ -53,7 +56,7 @@ namespace WebApi.Sevice.Service
             try
             {
                 // Lấy thông tin của cửa hàng
-                var shop = _iRepository.GetShopByID(shopId);
+                var shop = _IShopRepo.GetShopByID(shopId);
 
                 if (shop == null)
                 {
@@ -71,7 +74,7 @@ namespace WebApi.Sevice.Service
                 }
 
                 // Lấy thông tin doanh thu của cửa hàng
-                var revenue = _iRepository.ReveneuByShop(shopId);
+                var revenue = _IReveneuRepo.ReveneuByShop(shopId);
 
                 if (revenue == null)
                 {

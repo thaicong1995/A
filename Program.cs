@@ -8,13 +8,13 @@ using Microsoft.OpenApi.Models;
 using System.Net.WebSockets;
 using System.Text;
 using WebApi.Controllers.View;
+using WebApi.Helper.VNpay;
 using WebApi.MyDbContext;
 using WebApi.Reposetory.Interface;
 using WebApi.Reposetory.Reposetory;
 using WebApi.Sevice.Interface;
 using WebApi.Sevice.Service;
 using WebApi.TokenConfig;
-using WebApi.VNpay;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -33,18 +33,25 @@ builder.Services.AddScoped<IReveneuService,RevenueService>();
 builder.Services.AddScoped<IDiscountService,DiscountService>();
 builder.Services.AddScoped<IShopService, ShopService>();
 builder.Services.AddScoped<IAddCardATMSevice, AddCardATMSevice>();
-builder.Services.AddScoped<IRepository, Repository>();
 
+builder.Services.AddScoped<ICartRepo, CartRepo>();
+builder.Services.AddScoped<IDiscountRepo, DiscountRepo>();
+builder.Services.AddScoped<IOrderRepo, OrderRepo>();
+builder.Services.AddScoped<IProductRepo, ProductRepo>();
+builder.Services.AddScoped<IReveneuRepo, ReveneuRepo>();
+builder.Services.AddScoped<IShopRepo, ShopRepo>();
+builder.Services.AddScoped<IUserRepo, UserRepo>();
+builder.Services.AddScoped<IWalletRepo, WalletRepo>();
 
 builder.Services.AddScoped<Token>();
 builder.Services.AddSingleton<BackGroundService>();
 builder.Services.AddTransient<EmailService>();
+
 builder.Services.AddScoped<ResetService>();
 builder.Services.AddTransient<ResetService>();
+
 builder.Services.AddScoped<VnPayLibrary>();
 builder.Services.AddScoped<VnPayService>();
-builder.Services.AddScoped<VnPayLibraryToken>();
-builder.Services.AddScoped<VnPayServiceToken>();
 builder.Services.AddControllers();
 builder.Services.AddControllersWithViews();
 builder.Services.Configure<RazorViewEngineOptions>(options =>
@@ -171,7 +178,7 @@ app.UseEndpoints(endpoints =>
     endpoints.MapControllerRoute(
         name: "UpdatePassword",
         pattern: "api/ResetPasswordForEmail/UpdatePassword",
-        defaults: new { controller = "ResetPasswordForEmail", action = "ResetPassword" }
+        defaults: new { controller = "ResetPasswordForEmail", action = "Reset-Password" }
     );
 });
 

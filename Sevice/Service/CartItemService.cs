@@ -10,11 +10,13 @@ namespace WebApi.Sevice.Service
     public class CartItemService : ICartItemService
     {
         private readonly MyDb _myDb;
-        private readonly IRepository _iRepository;
-        public CartItemService(MyDb myDb, IRepository repository)
+        private readonly ICartRepo _ICartRepo;
+        private readonly IProductRepo _IProductRepo;
+        public CartItemService(MyDb myDb, ICartRepo repository, IProductRepo iProductRepo)
         {
             _myDb = myDb;
-            _iRepository = repository;
+            _ICartRepo = repository;
+            _IProductRepo = iProductRepo;
         }
 
         //Công việc cần làm: Kiểm tra số lượng trước khi lưu vào giỏ hàng (hoàn thành)
@@ -30,7 +32,7 @@ namespace WebApi.Sevice.Service
                     int quantity = cartItemRequest.quantities[i];
 
                     // Kiem tra san pham trong gio hang
-                    CartItem productInCart = _iRepository.GetCartItemByUser(productId, userID);
+                    CartItem productInCart = _ICartRepo.GetCartItemByUser(productId, userID);
 
                     if (productInCart != null)
                     {
@@ -41,7 +43,7 @@ namespace WebApi.Sevice.Service
                     else
                     {
                         // San pham chua co- them moi
-                        Product product = _iRepository.GetProductByID(productId);
+                        Product product = _IProductRepo.GetProductByID(productId);
                         if (product != null)
                         {
                             if (quantity <= 0)
@@ -88,7 +90,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem =_iRepository.GetCartItemByUser(productId, userId);
+                CartItem cartItem =_ICartRepo.GetCartItemByUser(productId, userId);
 
                 if (cartItem != null)
                 {
@@ -112,7 +114,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _iRepository.GetCartItemByUser(productId, userId);
+                CartItem cartItem = _ICartRepo.GetCartItemByUser(productId, userId);
 
                 if (cartItem != null)
                 {
@@ -144,7 +146,7 @@ namespace WebApi.Sevice.Service
         {
             try
             {
-                CartItem cartItem = _iRepository.GetCartItemByUser(productId, userId);
+                CartItem cartItem = _ICartRepo.GetCartItemByUser(productId, userId);
                 if (cartItem != null)
                 {
                     _myDb.CartItems.Remove(cartItem);

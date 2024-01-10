@@ -2,6 +2,7 @@
 using WebApi.Models;
 using WebApi.Models.Enum;
 using WebApi.MyDbContext;
+using WebApi.Reposetory.Interface;
 using WebApi.Sevice.Interface;
 
 namespace WebApi.Sevice.Service
@@ -9,8 +10,10 @@ namespace WebApi.Sevice.Service
     public class DiscountService : IDiscountService
     {
         private readonly MyDb _myDb;
-        public DiscountService(MyDb myDb)
+        private readonly IDiscountRepo _IDiscountRepo;
+        public DiscountService(IDiscountRepo discountRepo, MyDb myDb)
         {
+            _IDiscountRepo = discountRepo;
             _myDb = myDb;
         }
         public Discounts CreateDiscount(DiscountDTo discount)
@@ -32,7 +35,7 @@ namespace WebApi.Sevice.Service
                     Value = discount.Value,
                     StartDate = currentDate,
                     EndDate = currentDate.AddDays(1), // Hiệu lực trong 1 ngày
-                    _discountStatus = DiscountStatus.Active 
+                    _discountStatus = DiscountStatus.Active
                 };
 
                 // Thêm đối tượng mã giảm giá vào cơ sở dữ liệu
@@ -49,14 +52,14 @@ namespace WebApi.Sevice.Service
 
         public decimal ApplyDiscount(Order order, int discountId, int userId)
         {
-            var discount = _myDb.Discounts.FirstOrDefault(d => d.Id == discountId);
+            var discount = _IDiscountRepo.GetbyIdDiscount(discountId);
 
             if (discount == null)
             {
                 throw new InvalidOperationException("Discount not found!");
             }
             var date = DateTime.Now;
-            if (date <  discount.EndDate && date > discount.EndDate)
+            if (date < discount.EndDate && date > discount.EndDate)
             {
                 return 0;
             }
@@ -92,6 +95,11 @@ namespace WebApi.Sevice.Service
                 _myDb.DiscountUsages.Add(discountUsage);
                 _myDb.SaveChanges();
             }
+        }
+
+        public List<Discounts> GetDiscounts(int userId) 
+        {
+            return _IDiscountRepo.GetUnusedDiscountsByUserId(userId);
         }
     }
 }
