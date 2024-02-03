@@ -28,12 +28,12 @@ namespace WebApi.Controllers
 
 
 
-        [HttpGet("GetProduct-Id")]
-        public IActionResult GetShopById([FromQuery] int Id)
+        [HttpGet("GetProduct-Id/{productId}")]
+        public IActionResult GetShopById(int productId)
         {
             try
             {
-                var Result = _iProductService.GetProductByID(Id);
+                var Result = _iProductService.GetProductByID(productId);
                 if (Result != null)
                 {
                     return Ok(Result);
@@ -51,8 +51,9 @@ namespace WebApi.Controllers
 
 
         [Authorize]
-        [HttpPost("add-new")]
-        public IActionResult AddNewProduct([FromForm] IFormFile image, [FromForm] ProductDto productDto, [FromQuery] int ShopId)
+        [HttpPost("add-new/{ShopId}")]
+        public IActionResult AddNewProduct(IFormFile image, [FromForm] ProductDto productDto,
+            int ShopId)
         {
             try
             {
@@ -162,8 +163,8 @@ namespace WebApi.Controllers
             }
         }
 
-        [HttpGet("GetAllProductShop")]
-        public IActionResult GetAllByIdShopforUser([FromQuery] int ShopID)
+        [HttpGet("GetAllProductShop/{ShopID}")]
+        public IActionResult GetAllByIdShopforUser( int ShopID)
         {
             try
             {
@@ -188,8 +189,8 @@ namespace WebApi.Controllers
         }
 
 
-        [HttpGet("all/page={page}")]
-        public IActionResult GetAll(int page = 1)
+        [HttpGet("all")]
+        public IActionResult GetAll(int page = 0)
         {
             try
             {

@@ -17,7 +17,7 @@ namespace WebApi.Controllers
     {
         private readonly Token _token;
         private readonly IReveneuService _iRevenueService;
-        public ReveneuController (Token token, IReveneuService revenueService)
+        public ReveneuController(Token token, IReveneuService revenueService)
         {
             _token = token;
             _iRevenueService = revenueService;
@@ -53,6 +53,8 @@ namespace WebApi.Controllers
 
             return Unauthorized("Unauthorized");
         }
+
+
     }
 
 }

@@ -180,6 +180,9 @@ namespace WebApi.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
 
+                    b.Property<bool>("CheckDiscount")
+                        .HasColumnType("bit");
+
                     b.Property<int?>("DiscountId")
                         .HasColumnType("int");
 

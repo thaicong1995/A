@@ -6,6 +6,7 @@ public class BackGroundService : IHostedService, IDisposable
     private readonly IServiceProvider _serviceProvider;
     private readonly ILogger<BackGroundService> _logger;
     private Timer _timer;
+    private Timer _timer2;
     private bool _disposed = false;
     private readonly object _lock = new object();
 
@@ -18,7 +19,7 @@ public class BackGroundService : IHostedService, IDisposable
     public Task StartAsync(CancellationToken stoppingToken)
     {
         _timer = new Timer(DoWork, null, TimeSpan.Zero, TimeSpan.FromSeconds(5)); // Kiểm tra mỗi 5s
-        _timer = new Timer(UpdateRevenue, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
+        _timer2 = new Timer(UpdateRevenue, null, TimeSpan.Zero, TimeSpan.FromSeconds(5));
         return Task.CompletedTask;
     }
 
@@ -89,7 +90,7 @@ public class BackGroundService : IHostedService, IDisposable
 
                 DateTime now = DateTime.Now;
 
-                _logger.LogInformation("Kiểm tra token hết hạn vào: " + now.ToString());
+                Console.WriteLine("Kiểm tra token hết hạn vào: " + now.ToString());
 
                 // Lấy tất cả các token hết hạn và có trạng thái "Valid"
                 var expiredTokens = scopedMyDb.AccessTokens
@@ -98,6 +99,7 @@ public class BackGroundService : IHostedService, IDisposable
 
                 foreach (var token in expiredTokens)
                 {
+                 
                     // Cập nhật trạng thái của token thành "Expired"
                     token.statusToken = StatusToken.Expired;
                 }
@@ -124,6 +126,7 @@ public class BackGroundService : IHostedService, IDisposable
         lock (_lock)
         {
             _timer?.Dispose();
+            _timer2?.Dispose();
         }
     }
 }

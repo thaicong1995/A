@@ -152,8 +152,8 @@ namespace WebApi.Controllers
 
 
         [Authorize]
-        [HttpDelete("Delete")]
-        public IActionResult deleteProductInCart([FromBody] int productId)
+        [HttpDelete("Delete/{productId}")]
+        public IActionResult deleteProductInCart(int productId)
         {
             try
             {

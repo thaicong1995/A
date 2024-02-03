@@ -92,7 +92,7 @@ namespace WebApi.Controllers
                 {
                     HttpOnly = true,
                     Secure = true,
-                    Expires = DateTime.UtcNow.AddMinutes(3000)
+                    Expires = DateTime.Now.AddMinutes(60)
                 };
 
                 HttpContext.Response.Cookies.Append("authenticationToken", jwtToken, cookieOptions);

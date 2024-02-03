@@ -65,7 +65,7 @@ namespace WebApi.Sevice.Service
                 // Gửi liên kết kích hoạt cho người dùng 
                 if (_emailService.SendActivationEmail(user.Email, activationLink))
                 {
-                    user.ExpLink = DateTime.Now.AddMinutes(1);
+                    user.ExpLink = DateTime.Now.AddMinutes(60);
                     _myDb.SaveChanges();
                 }
                 _iShopService.CreateShopForUser(user);
@@ -159,7 +159,7 @@ namespace WebApi.Sevice.Service
                 
                 if (_emailService.SendActivationEmail(user.Email, activationLink))
                 {
-                    user.ExpLink = DateTime.Now.AddMinutes(1);
+                    user.ExpLink = DateTime.Now.AddMinutes(60);
 
                 }
 
@@ -174,7 +174,8 @@ namespace WebApi.Sevice.Service
         private void UpdateOrCreateAccessToken(User user)
         {
             var existingToken = _IUserRepo.GetValidTokenByUserId(user.Id);
-
+            Console.WriteLine($"-----------{existingToken}");
+            Console.WriteLine($"-----------ID{user.Id}");
             if (existingToken != null)
             {
                 var token = _token.CreateToken(user);
@@ -183,7 +184,7 @@ namespace WebApi.Sevice.Service
                     throw new Exception("Failed to create a token.");
 
                 existingToken.AccessToken = token;
-                existingToken.ExpirationDate = DateTime.Now.AddMinutes(30);
+                existingToken.ExpirationDate = DateTime.Now.AddMinutes(60);//----------
             }
             else
             {
@@ -199,12 +200,12 @@ namespace WebApi.Sevice.Service
                     UserID = user.Id,
                     AccessToken = token,
                     statusToken = StatusToken.Valid,
-                    ExpirationDate = DateTime.Now.AddMinutes(30)
+                    ExpirationDate = DateTime.Now.AddMinutes(60)//--------------
                 };
 
                 _myDb.AccessTokens.Add(accessToken);
-            }
 
+            }
             _myDb.SaveChanges();
         }
 

@@ -35,8 +35,7 @@ public class VnPayLibrary
         {
             return ex.Message;
         }
-
-        return "127.0.0.1";
+        return null;
     }
     public void AddRequestData(string key, string value)
     {

@@ -109,7 +109,7 @@ namespace WebApi.Controllers
 
 
         [Authorize]
-        [HttpGet("History-Sold")]
+        [HttpGet("History-Sold/{shopId}")]
         public IActionResult ProductSold(int shopId)
         {
             try
@@ -137,6 +137,12 @@ namespace WebApi.Controllers
             {
                 return BadRequest(new { message = $"Error: {ex.Message}" });
             }
+        }
+
+        [HttpGet("shopView/{shopId}")]
+        public IActionResult getShopView(int shopId)
+        {
+            return Ok(_iShopService.findByShop(shopId));
         }
     }
 

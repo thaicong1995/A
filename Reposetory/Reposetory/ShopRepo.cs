@@ -39,5 +39,6 @@ namespace WebApi.Reposetory.Reposetory
         {
             return _myDb.Shops.Any(s => s.UserId == userId && s.Id == shopId);
         }
+
     }
 }

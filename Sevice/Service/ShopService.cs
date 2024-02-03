@@ -186,5 +186,25 @@ namespace WebApi.Sevice.Service
                 throw new ApplicationException("An error occurred while fetching sold products.");
             }
         }
+
+        public Shop findByShop(int shopId)
+        {
+            try
+            {
+                // Kiểm tra sự tồn tại của cửa hàng với shopId
+                if (!_IShopRepo.IsShopActive(shopId))
+                {
+                    throw new Exception("Shop not found!");
+                }
+
+                var shop = _IShopRepo.GetShopByID(shopId);
+
+                return shop;
+            }
+            catch (Exception e)
+            {
+                throw new Exception($"An error occurred: {e.Message}");
+            }
+        }
     }
 }

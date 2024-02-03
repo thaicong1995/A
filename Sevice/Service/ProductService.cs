@@ -350,14 +350,13 @@ namespace WebApi.Sevice.Service
             return results;
         }
 
-        public List<Product> GetAll(int page = 1)
+        public List<Product> GetAll(int page = 0)
         {
             try
             {
-                int pageSize = 10; // Giá trị mặc định cho pageSize
-                int skip = (page - 1) * pageSize;
 
-                List<Product> products = _myDb.Products.Skip(skip).Take(pageSize).ToList();
+
+                List<Product> products = _myDb.Products.ToList();
 
                 return products;
             }
@@ -365,6 +364,20 @@ namespace WebApi.Sevice.Service
             {
                 throw new Exception($"An error occurred: {e.Message}");
             }
+
+            //try
+            //{
+            //    int pageSize = 10; // Giá trị mặc định cho pageSize
+            //    int skip = (page - 1) * pageSize;
+
+            //    List<Product> products = _myDb.Products.Skip(skip).Take(pageSize).ToList();
+
+            //    return products;
+            //}
+            //catch (Exception e)
+            //{
+            //    throw new Exception($"An error occurred: {e.Message}");
+            //}
         }
 
         public byte[] GetProductImageBytes(string imagePath)

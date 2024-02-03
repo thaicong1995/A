@@ -8,5 +8,6 @@ namespace WebApi.Dto
         public string ShopName { get; set; }
         public string Phone { get; set; }
 
+       
     }
 }

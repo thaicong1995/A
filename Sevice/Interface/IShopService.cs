@@ -10,5 +10,6 @@ namespace WebApi.Sevice.Interface
         string UpdateShop(int userId, ShopDto shopDto);
         bool ActivateShop(int userId, ShopDto shopDto);
         List<OrderDetails> GetProductSold(int shopId, int userId);
+        Shop findByShop(int shopId);
     }
 }

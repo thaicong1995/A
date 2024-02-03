@@ -12,8 +12,8 @@ using WebApi.MyDbContext;
 namespace WebApi.Migrations
 {
     [DbContext(typeof(MyDb))]
-    [Migration("20240115130231_data")]
-    partial class data
+    [Migration("20240129055030_mydb")]
+    partial class mydb
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -181,6 +181,9 @@ namespace WebApi.Migrations
                         .HasColumnType("int");
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"), 1L, 1);
+
+                    b.Property<bool>("CheckDiscount")
+                        .HasColumnType("bit");
 
                     b.Property<int?>("DiscountId")
                         .HasColumnType("int");

@@ -41,7 +41,7 @@ namespace WebApi.Models
         public int? DiscountId { set; get; }    
         public OrderStatus _orderStatus { get; set; }
         public bool IsReveneu { set; get; } = false;
-
+        public bool CheckDiscount { get; set; }
         public string OrderStatusString
         {
             get

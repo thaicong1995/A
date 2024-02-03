@@ -65,8 +65,8 @@ namespace WebApi.Controllers
 
 
 
-        [HttpPost("pay")]
-        public ActionResult<Order> Pay([FromQuery] string orderNo, [FromBody] OrderDto orderDto)
+        [HttpPost("pay/{orderNo}")]
+        public ActionResult<Order> Pay(string orderNo, [FromBody] OrderDto orderDto)
         {
             try
             {

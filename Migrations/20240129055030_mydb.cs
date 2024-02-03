@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.Migrations;
 
 namespace WebApi.Migrations
 {
-    public partial class data : Migration
+    public partial class mydb : Migration
     {
         protected override void Up(MigrationBuilder migrationBuilder)
         {
@@ -118,7 +118,8 @@ namespace WebApi.Migrations
                     payMethod = table.Column<string>(type: "nvarchar(max)", nullable: false),
                     DiscountId = table.Column<int>(type: "int", nullable: true),
                     _orderStatus = table.Column<string>(type: "nvarchar(max)", nullable: false),
-                    IsReveneu = table.Column<bool>(type: "bit", nullable: false)
+                    IsReveneu = table.Column<bool>(type: "bit", nullable: false),
+                    CheckDiscount = table.Column<bool>(type: "bit", nullable: false)
                 },
                 constraints: table =>
                 {

@@ -7,5 +7,6 @@ namespace WebApi.Dto
         public int UserId { get; set; }
         public string Name { get; set; }
         public Wallet Wallet { get; set; }
+        public Shop shop { get; set; }
     }
 }

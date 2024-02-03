@@ -30,7 +30,7 @@ namespace WebApi.TokenConfig
             var key = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration.GetSection("Jwt:Token256").Value!)); // Sử dụng khóa 256 bit
             var cred = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
             DateTime now = DateTime.Now; // Lấy thời gian hiện tại
-            int expirationMinutes = 30; // Đặt thời gian hết hạn là 3 phút
+            int expirationMinutes = 60; // -------------------
             DateTime expiration = now.AddMinutes(expirationMinutes); // Tính thời gian hết hạn
 
             var token = new JwtSecurityToken(claims: claims, expires: expiration,
@@ -52,13 +52,35 @@ namespace WebApi.TokenConfig
                 if (user != null)
                 {
                     var wallet = _myDb.Wallets.FirstOrDefault(w => w.UserId == userId);
-
-                    return new WalletDto
+                    var shop = _myDb.Shops.FirstOrDefault(s => s.UserId == userId && s._shopStatus == ShopStatus.Active);
+                    if (shop != null)
                     {
-                        UserId = user.Id,
-                        Name = user.Name,
-                        Wallet = wallet
-                    };
+                        return new WalletDto
+                        {
+                            UserId = user.Id,
+                            Name = user.Name,
+                            Wallet = wallet,
+                            shop = new Shop
+                            {
+                               _shopStatus = ShopStatus.Active
+                               
+                            }
+                        };
+                    }
+                    else
+                    {       
+                        return new WalletDto
+                        {
+                            UserId = user.Id,
+                            Name = user.Name,
+                            Wallet = wallet,
+                            shop = new Shop
+                            {
+                                _shopStatus = ShopStatus.InActive
+
+                            }
+                        };
+                    }
                 }
             }
 
@@ -98,6 +120,7 @@ namespace WebApi.TokenConfig
 
         }
 
+        
         // check token logout
         public ClaimsPrincipal ValidateToken(string token)
         {
@@ -136,7 +159,7 @@ namespace WebApi.TokenConfig
             if (userTokens != null)
             {
                 //ExpirationDate > DateTime.UtcNow thì token còn hạn.
-                if (userTokens.ExpirationDate > DateTime.UtcNow)
+                if (userTokens.ExpirationDate > DateTime.Now)
                 {
                     return StatusToken.Valid;
                 }
